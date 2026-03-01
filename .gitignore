@@ -15,7 +15,7 @@ db.sqlite3
 # Environment / secrets
 .env
 
-# Static / media (you can adjust later)
+# Static / media
 staticfiles/
 media/
 
@@ -26,6 +26,3 @@ media/
 # OS
 .DS_Store
 Thumbs.db
-
-# Docker
-pgdata/
