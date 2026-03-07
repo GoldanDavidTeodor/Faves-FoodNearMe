@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Logged out — Faves{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:420px; margin:2rem auto; text-align:center;">
+  <h2>You've been logged out</h2>
+  <p style="margin-top:.75rem;">Thanks for using Faves!</p>
+  <p style="margin-top:1rem;">
+    <a href="{% url 'login' %}" class="btn btn-primary">Login again</a>
+  </p>
+</div>
+{% endblock %}

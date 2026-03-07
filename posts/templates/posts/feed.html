@@ -1,36 +1,105 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Faves - Feed</title>
-  </head>
-  <body>
-    <h1>Faves Feed</h1>
+{% extends "base.html" %}
+{% block title %}Feed — Faves{% endblock %}
 
-    <p>
-      <a href="{% url 'post_create' %}">New post</a>
-      {% if user.is_authenticated %}
-        | Logged in as {{ user.username }}
-      {% else %}
-        | <a href="/admin/login/">Login</a>
-      {% endif %}
-    </p>
+{% block extra_css %}
+<style>
+  .post-card { background: #fff; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.1); overflow: hidden; max-width: 540px; margin-left: auto; margin-right: auto; }
+  .post-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; }
+  .post-header-left { display: flex; align-items: center; gap: .5rem; }
+  .post-header a { font-weight: 700; color: #222; text-decoration: none; font-size: .95rem; }
+  .post-header a:hover { text-decoration: underline; }
+  .post-header .post-date { font-size: .75rem; color: #999; }
+  .post-title-line { font-size: 1rem; font-weight: 700; color: #222; }
+  .post-images { position: relative; width: 100%; background: #fafafa; }
+  .post-images img { width: 100%; display: none; object-fit: cover; max-height: 580px; }
+  .post-images img.active { display: block; }
 
-    <hr />
+  .carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 2; }
+  .carousel-dots .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.5); border: none; padding: 0; cursor: pointer; transition: background .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .carousel-dots .dot.active { background: #fff; }
+  .post-footer { padding: .75rem 1rem; }
+  .post-actions { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
+  .post-actions button { background: none; border: none; cursor: pointer; font-size: 1.3rem; padding: 0; line-height: 1; }
+  .post-actions .like-count { font-size: .85rem; font-weight: 600; color: #333; }
+  .post-desc { font-size: .9rem; color: #333; margin-bottom: .25rem; }
+  .post-desc strong { font-weight: 700; }
+  .post-meta { font-size: .8rem; color: #999; }
+</style>
+{% endblock %}
 
-    {% for post in posts %}
-      <article>
-        <h3>{{ post.title }}</h3>
-        <p>by {{ post.user.username }} — {{ post.created_at }}</p>
-        {% if post.address_text %}<p>{{ post.address_text }}</p>{% endif %}
-        {% if post.description %}<p>{{ post.description }}</p>{% endif %}
-        {% if post.lat and post.lng %}
-          <p>Coords: {{ post.lat }}, {{ post.lng }}</p>
+{% block content %}
+{% for post in posts %}
+  <div class="post-card">
+    <div class="post-header">
+      <div class="post-header-left">
+        <a href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a>
+      </div>
+      <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
+    </div>
+
+    {% if post.images.all %}
+    <div class="post-images" data-carousel>
+      {% for img in post.images.all %}
+        <img src="{{ img.image.url }}" alt="{{ post.title }}" {% if forloop.first %}class="active"{% endif %}>
+      {% endfor %}
+
+      <div class="carousel-dots">
+        {% for img in post.images.all %}
+          <button class="dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></button>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="post-footer">
+      <p class="post-title-line">{{ post.title }}</p>
+      <div class="post-actions">
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'post_like' post.id %}" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'feed' %}">
+          <button type="submit">{% if post.id in liked_ids %}❤️{% else %}🤍{% endif %}</button>
+        </form>
         {% endif %}
-      </article>
-      <hr />
-    {% empty %}
-      <p>No posts yet.</p>
-    {% endfor %}
-  </body>
-</html>
+        <span class="like-count">{{ post.likes.count }} like{{ post.likes.count|pluralize }}</span>
+      </div>
+
+      {% if post.description %}
+        <p class="post-desc">{{ post.description }}</p>
+      {% endif %}
+
+      {% if post.address_text %}
+        <p class="post-meta">📍 {{ post.address_text }}</p>
+      {% endif %}
+
+      {% if post.lat and post.lng %}
+        <p class="post-meta">{{ post.lat }}, {{ post.lng }}</p>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}
+  <div class="card" style="text-align:center; max-width:540px; margin:2rem auto;">
+    <p>No posts yet. Be the first to share a food spot!</p>
+  </div>
+{% endfor %}
+
+<script>
+document.querySelectorAll('[data-carousel]').forEach(carousel => {
+  const imgs = carousel.querySelectorAll('img');
+  const dots = carousel.querySelectorAll('.dot');
+  let cur = 0;
+
+  function show(i) {
+    imgs[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+    cur = (i + imgs.length) % imgs.length;
+    imgs[cur].classList.add('active');
+    dots[cur].classList.add('active');
+  }
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => show(parseInt(dot.dataset.index)));
+  });
+});
+</script>
+{% endblock %}

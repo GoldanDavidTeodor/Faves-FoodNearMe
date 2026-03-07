@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Faves{% endblock %}</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+      .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
+      nav { background: #fff; border-bottom: 1px solid #ddd; padding: .75rem 0; margin-bottom: 1.5rem; }
+      nav .container { display: flex; justify-content: space-between; align-items: center; }
+      nav a { color: #e85d04; text-decoration: none; font-weight: 600; }
+      nav a:hover { text-decoration: underline; }
+      .nav-links { display: flex; gap: 1rem; align-items: center; }
+      .nav-links span { color: #666; font-size: .9rem; }
+      .btn { display: inline-block; padding: .45rem 1rem; border: none; border-radius: 4px; font-size: .9rem; cursor: pointer; text-decoration: none; }
+      .btn-primary { background: #e85d04; color: #fff; }
+      .btn-primary:hover { background: #d45203; }
+      .btn-secondary { background: #eee; color: #333; }
+      .btn-secondary:hover { background: #ddd; }
+      .card { background: #fff; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+      h1, h2, h3 { color: #222; }
+      input, textarea, select { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; margin-top: .25rem; }
+      input:focus, textarea:focus { outline: none; border-color: #e85d04; }
+      label { font-weight: 600; display: block; margin-top: .75rem; }
+      .form-help { font-size: .8rem; color: #888; }
+      .errorlist { color: #c00; list-style: none; font-size: .85rem; }
+      footer { text-align: center; padding: 2rem 0; color: #999; font-size: .8rem; }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <nav>
+      <div class="container">
+        <a href="{% url 'feed' %}" style="font-size:1.2rem;">Faves</a>
+        <div class="nav-links">
+          {% if user.is_authenticated %}
+            <a href="{% url 'profile' user.username %}" style="color:#666; font-weight:normal;">{{ user.username }}</a>
+            <a href="{% url 'post_create' %}" class="btn btn-primary">+ New Post</a>
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Logout</button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+  </body>
+</html>

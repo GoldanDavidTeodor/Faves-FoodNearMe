@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — Faves{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-header { text-align: center; padding: 2rem 0 1rem; }
+  .profile-header h1 { font-size: 1.8rem; }
+  .profile-stats { display: flex; justify-content: center; gap: 2rem; margin-top: .75rem; font-size: .95rem; color: #666; }
+  .profile-stats strong { color: #222; }
+  .tab-bar { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 1rem; }
+  .tab-bar a { flex: 1; text-align: center; padding: .6rem 0; text-decoration: none; color: #888; font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab-bar a.active { color: #e85d04; border-bottom-color: #e85d04; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+  <h1>{{ profile_user.username }}</h1>
+  {% if user.is_authenticated and user != profile_user %}
+  <form method="post" action="{% url 'toggle_follow' profile_user.username %}" style="margin-top:.5rem;">
+    {% csrf_token %}
+    {% if is_following %}
+      <button type="submit" class="btn btn-secondary">Unfollow</button>
+    {% else %}
+      <button type="submit" class="btn btn-primary">Follow</button>
+    {% endif %}
+  </form>
+  {% endif %}
+  <div class="profile-stats">
+    <span><strong>{{ user_posts.count }}</strong> posts</span>
+    <span><strong>{{ followers_count }}</strong> follower{{ followers_count|pluralize }}</span>
+    <span><strong>{{ following_count }}</strong> following</span>
+    <span><strong>{{ liked_posts.count }}</strong> liked</span>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <a href="#" class="active" data-tab="posts-tab">Posts</a>
+  <a href="#" data-tab="liked-tab">Liked</a>
+</div>
+
+<div id="posts-tab" class="tab-content active">
+  {% for post in user_posts %}
+    <div class="card">
+      <h3>{{ post.title }}</h3>
+      <p style="color:#666; font-size:.85rem;">{{ post.created_at|date:"M d, Y H:i" }}</p>
+      {% if post.images.all %}
+      <div style="display:flex; gap:.5rem; overflow-x:auto; margin:.75rem 0;">
+        {% for img in post.images.all %}
+          <img src="{{ img.image.url }}" alt="Photo" style="max-height:200px; border-radius:4px; object-fit:cover;">
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if post.address_text %}<p>📍 {{ post.address_text }}</p>{% endif %}
+      {% if post.description %}<p>{{ post.description }}</p>{% endif %}
+    </div>
+  {% empty %}
+    <div class="card" style="text-align:center;">
+      <p>No posts yet.</p>
+    </div>
+  {% endfor %}
+</div>
+
+<div id="liked-tab" class="tab-content">
+  {% for post in liked_posts %}
+    <div class="card">
+      <h3>{{ post.title }}</h3>
+      <p style="color:#666; font-size:.85rem;">by <a href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a> — {{ post.created_at|date:"M d, Y H:i" }}</p>
+      {% if post.images.all %}
+      <div style="display:flex; gap:.5rem; overflow-x:auto; margin:.75rem 0;">
+        {% for img in post.images.all %}
+          <img src="{{ img.image.url }}" alt="Photo" style="max-height:200px; border-radius:4px; object-fit:cover;">
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if post.address_text %}<p>📍 {{ post.address_text }}</p>{% endif %}
+      {% if post.description %}<p>{{ post.description }}</p>{% endif %}
+    </div>
+  {% empty %}
+    <div class="card" style="text-align:center;">
+      <p>No liked posts yet.</p>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+  document.querySelectorAll('.tab-bar a').forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.tab-bar a').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+{% endblock %}
