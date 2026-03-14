@@ -4,55 +4,85 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Faves{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/krystonschwarze/coolicons@v4.1/Webfont/coolicons.css" />
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
-      .container { max-width: 720px; margin: 0 auto; padding: 0 1rem; }
-      nav { background: #fff; border-bottom: 1px solid #ddd; padding: .75rem 0; margin-bottom: 1.5rem; }
-      nav .container { display: flex; justify-content: space-between; align-items: center; }
-      nav a { color: #e85d04; text-decoration: none; font-weight: 600; }
-      nav a:hover { text-decoration: underline; }
-      .nav-links { display: flex; gap: 1rem; align-items: center; }
-      .nav-links span { color: #666; font-size: .9rem; }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; display: flex; min-height: 100vh; }
+
+      /* Sidebar */
+      .sidebar { width: max(200px, calc(50vw - 270px)); background: #fff; border-right: 1px solid #ddd; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; padding: 1.5rem 1rem; z-index: 10; align-items: flex-end; }
+      .sidebar-nav { list-style: none; flex: 1; display: flex; flex-direction: column; gap: .25rem; }
+      .sidebar-nav a { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; text-decoration: none; color: #333; font-size: .95rem; font-weight: 500; transition: background .15s; }
+      .sidebar-nav a:hover { background: #f0f0f0; }
+      .sidebar-nav a.active { font-weight: 700; background: #fef0fb; color: #f252ca; }
+      .sidebar-nav a.nav-brand { color: #f252ca; }
+      .sidebar-nav a i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
+      .sidebar-user { display: flex; align-items: center; gap: .65rem; padding: .65rem .75rem; margin-bottom: .5rem; }
+      .sidebar-user img, .sidebar-user .avatar-sm-placeholder { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+      .sidebar-user .avatar-sm-placeholder { background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; }
+      .sidebar-user span { font-size: .9rem; font-weight: 600; color: #333; }
+      .sidebar-bottom { border-top: 1px solid #eee; padding-top: 1rem; margin-top: .5rem; }
+      .sidebar-bottom a, .sidebar-bottom form { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; text-decoration: none; color: #333; font-size: .95rem; font-weight: 500; transition: background .15s; }
+      .sidebar-bottom a:hover, .sidebar-bottom button:hover { background: #f0f0f0; }
+      .sidebar-bottom button { background: none; border: none; cursor: pointer; font-size: .95rem; font-weight: 500; color: #333; display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; width: 100%; transition: background .15s; }
+      .sidebar-bottom button i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
+
+      .main-content { margin-left: max(200px, calc(50vw - 270px)); flex: 1; min-height: 100vh; }
+      .container { max-width: 540px; padding: 0; }
+
+      /* Shared */
       .btn { display: inline-block; padding: .45rem 1rem; border: none; border-radius: 4px; font-size: .9rem; cursor: pointer; text-decoration: none; }
-      .btn-primary { background: #e85d04; color: #fff; }
-      .btn-primary:hover { background: #d45203; }
+      .btn-primary { background: #f252ca; color: #fff; }
+      .btn-primary:hover { background: #d946b0; }
       .btn-secondary { background: #eee; color: #333; }
       .btn-secondary:hover { background: #ddd; }
       .card { background: #fff; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
       h1, h2, h3 { color: #222; }
       input, textarea, select { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; margin-top: .25rem; }
-      input:focus, textarea:focus { outline: none; border-color: #e85d04; }
+      input:focus, textarea:focus { outline: none; border-color: #f252ca; }
       label { font-weight: 600; display: block; margin-top: .75rem; }
       .form-help { font-size: .8rem; color: #888; }
       .errorlist { color: #c00; list-style: none; font-size: .85rem; }
-      footer { text-align: center; padding: 2rem 0; color: #999; font-size: .8rem; }
     </style>
     {% block extra_css %}{% endblock %}
   </head>
   <body>
-    <nav>
-      <div class="container">
-        <a href="{% url 'feed' %}" style="font-size:1.2rem;">Faves</a>
-        <div class="nav-links">
-          {% if user.is_authenticated %}
-            <a href="{% url 'profile' user.username %}" style="color:#666; font-weight:normal;">{{ user.username }}</a>
-            <a href="{% url 'post_create' %}" class="btn btn-primary">+ New Post</a>
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-secondary">Logout</button>
-            </form>
-          {% else %}
-            <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
-            <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
-          {% endif %}
-        </div>
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="{% url 'feed' %}" class="nav-brand"><i class="ci-House_01"></i> Faves</a></li>
+        <li><a href="{% url 'feed' %}"><i class="ci-Compass"></i> Explore</a></li>
+        <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i> For You</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i> New Post</a></li>
+        <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i> Profile</a></li>
+        {% endif %}
+      </ul>
+      <div class="sidebar-bottom">
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' user.username %}" class="sidebar-user">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" alt="">
+            {% else %}
+              <div class="avatar-sm-placeholder">{{ user.username|first|upper }}</div>
+            {% endif %}
+            <span>{{ user.username }}</span>
+          </a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit"><i class="ci-Log_Out"></i> Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}"><i class="ci-Lock_Open"></i> Login</a>
+          <a href="{% url 'register' %}"><i class="ci-User_Add"></i> Register</a>
+        {% endif %}
       </div>
-    </nav>
+    </aside>
 
-    <main class="container">
-      {% block content %}{% endblock %}
-    </main>
+    <div class="main-content">
+      <main class="container">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
 
   </body>
 </html>

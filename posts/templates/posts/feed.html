@@ -3,13 +3,15 @@
 
 {% block extra_css %}
 <style>
-  .post-card { background: #fff; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.1); overflow: hidden; max-width: 540px; margin-left: auto; margin-right: auto; }
+  .post-card { background: #fff; border-radius: 0; margin-bottom: 0; box-shadow: none; overflow: hidden; max-width: 540px; border: 1px solid #dbdbdb; border-top: none; }
+  .post-card:first-child { border-top: 1px solid #dbdbdb; }
   .post-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; }
-  .post-header-left { display: flex; align-items: center; gap: .5rem; }
+  .post-header-left { display: flex; align-items: center; gap: .6rem; }
+  .post-header-left .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+  .post-header-left .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 700; flex-shrink: 0; }
   .post-header a { font-weight: 700; color: #222; text-decoration: none; font-size: .95rem; }
   .post-header a:hover { text-decoration: underline; }
   .post-header .post-date { font-size: .75rem; color: #999; }
-  .post-title-line { font-size: 1rem; font-weight: 700; color: #222; }
   .post-images { position: relative; width: 100%; background: #fafafa; }
   .post-images img { width: 100%; display: none; object-fit: cover; max-height: 580px; }
   .post-images img.active { display: block; }
@@ -17,13 +19,21 @@
   .carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 2; }
   .carousel-dots .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.5); border: none; padding: 0; cursor: pointer; transition: background .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   .carousel-dots .dot.active { background: #fff; }
+
   .post-footer { padding: .75rem 1rem; }
-  .post-actions { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
-  .post-actions button { background: none; border: none; cursor: pointer; font-size: 1.3rem; padding: 0; line-height: 1; }
-  .post-actions .like-count { font-size: .85rem; font-weight: 600; color: #333; }
-  .post-desc { font-size: .9rem; color: #333; margin-bottom: .25rem; }
-  .post-desc strong { font-weight: 700; }
-  .post-meta { font-size: .8rem; color: #999; }
+  .post-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+  .action-group { display: flex; align-items: center; gap: .35rem; min-width: 48px; }
+  .action-group .count { font-size: .82rem; font-weight: 600; color: #555; }
+  .post-actions .action-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: flex; align-items: center; }
+  .post-actions .action-btn i { font-size: 1.45rem; color: #8e8e8e; transition: color .15s; }
+  .post-actions .action-btn:hover i { color: #e85d04; }
+  .post-actions .action-btn.liked i { color: #e53935; }
+  .post-actions .action-btn.liked:hover i { color: #c62828; }
+
+  .post-title-line { font-size: 1rem; font-weight: 700; color: #222; margin-bottom: .2rem; }
+  .post-desc { font-size: .9rem; color: #555; margin-bottom: .25rem; line-height: 1.45; }
+  .post-meta { font-size: .8rem; color: #999; display: flex; align-items: center; gap: .3rem; }
+  .post-meta i { font-size: .95rem; }
 </style>
 {% endblock %}
 
@@ -32,6 +42,11 @@
   <div class="post-card">
     <div class="post-header">
       <div class="post-header-left">
+        {% if post.user.profile.avatar %}
+          <img src="{{ post.user.profile.avatar.url }}" alt="" class="avatar">
+        {% else %}
+          <div class="avatar-placeholder">{{ post.user.username|first|upper }}</div>
+        {% endif %}
         <a href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a>
       </div>
       <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
@@ -52,28 +67,40 @@
     {% endif %}
 
     <div class="post-footer">
-      <p class="post-title-line">{{ post.title }}</p>
       <div class="post-actions">
-        {% if user.is_authenticated %}
-        <form method="post" action="{% url 'post_like' post.id %}" style="display:inline;">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{% url 'feed' %}">
-          <button type="submit">{% if post.id in liked_ids %}❤️{% else %}🤍{% endif %}</button>
-        </form>
-        {% endif %}
-        <span class="like-count">{{ post.likes.count }} like{{ post.likes.count|pluralize }}</span>
+        <div class="action-group">
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'post_like' post.id %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'feed' %}">
+            <button type="submit" class="action-btn {% if post.id in liked_ids %}liked{% endif %}">
+              <i class="ci-Heart_01"></i>
+            </button>
+          </form>
+          {% else %}
+          <span class="action-btn"><i class="ci-Heart_01"></i></span>
+          {% endif %}
+          {% if post.likes.count %}<span class="count">{{ post.likes.count }}</span>{% endif %}
+        </div>
+        <div class="action-group">
+          <button class="action-btn" type="button"><i class="ci-Chat"></i></button>
+        </div>
+        <div class="action-group">
+          <button class="action-btn" type="button"><i class="ci-Paper_Plane"></i></button>
+        </div>
+        <div class="action-group">
+          <button class="action-btn" type="button"><i class="ci-Cookie"></i></button>
+        </div>
       </div>
+
+      <p class="post-title-line">{{ post.title }}</p>
 
       {% if post.description %}
         <p class="post-desc">{{ post.description }}</p>
       {% endif %}
 
       {% if post.address_text %}
-        <p class="post-meta">📍 {{ post.address_text }}</p>
-      {% endif %}
-
-      {% if post.lat and post.lng %}
-        <p class="post-meta">{{ post.lat }}, {{ post.lng }}</p>
+        <p class="post-meta"><i class="ci-Map_Pin"></i> {{ post.address_text }}</p>
       {% endif %}
     </div>
   </div>

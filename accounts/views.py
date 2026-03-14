@@ -13,5 +13,4 @@ def register(request):
             return redirect("feed")
     else:
         form = RegisterForm()
-
     return render(request, "registration/register.html", {"form": form})
