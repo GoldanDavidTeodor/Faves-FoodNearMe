@@ -4,45 +4,156 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Faves{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/krystonschwarze/coolicons@v4.1/Webfont/coolicons.css" />
     <style>
+      :root {
+        --bg: #fff8f2;
+        --surface: #ffffff;
+        --surface-soft: #fffdf9;
+        --line: #eadfd5;
+        --text: #2a2018;
+        --muted: #7f7063;
+        --brand: #ef5a3c;
+        --brand-strong: #d9472a;
+        --brand-soft: #ffe9e2;
+      }
+
+      body[data-theme="night"] {
+        --bg: #11141a;
+        --surface: #171c24;
+        --surface-soft: #1c2330;
+        --line: #2a3240;
+        --text: #e8edf7;
+        --muted: #9aa9c1;
+        --brand: #ff8f57;
+        --brand-strong: #ff7a3e;
+        --brand-soft: #2a2f3a;
+      }
+
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; display: flex; min-height: 100vh; }
+      body {
+        font-family: "Manrope", "Segoe UI", sans-serif;
+        line-height: 1.55;
+        color: var(--text);
+        background:
+          radial-gradient(1200px 520px at -8% -10%, #ffd7be 0%, transparent 60%),
+          radial-gradient(900px 380px at 105% 6%, #ffecc8 0%, transparent 65%),
+          linear-gradient(180deg, #fff8f2 0%, #fff5ec 100%);
+        display: flex;
+        min-height: 100vh;
+        transition: background .28s ease, color .2s ease;
+      }
+
+      body[data-theme="night"] {
+        background:
+          radial-gradient(1200px 520px at -8% -10%, #222d3f 0%, transparent 62%),
+          radial-gradient(900px 380px at 105% 6%, #2d2536 0%, transparent 65%),
+          linear-gradient(180deg, #0f1319 0%, #141a24 100%);
+      }
 
       /* Sidebar */
-      .sidebar { width: max(200px, calc(50vw - 270px)); background: #fff; border-right: 1px solid #ddd; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; padding: 1.5rem 1rem; z-index: 10; align-items: flex-end; }
+      .sidebar {
+        width: max(210px, calc(50vw - 280px));
+        background: color-mix(in srgb, var(--surface) 86%, transparent);
+        border-right: 1px solid var(--line);
+        box-shadow: 8px 0 28px rgba(95, 61, 34, .06);
+        backdrop-filter: blur(8px);
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 1.55rem 1rem;
+        z-index: 10;
+        align-items: flex-end;
+      }
       .sidebar-nav { list-style: none; flex: 1; display: flex; flex-direction: column; gap: .25rem; }
-      .sidebar-nav a { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; text-decoration: none; color: #333; font-size: .95rem; font-weight: 500; transition: background .15s; }
-      .sidebar-nav a:hover { background: #f0f0f0; }
-      .sidebar-nav a.active { font-weight: 700; background: #fef0fb; color: #f252ca; }
-      .sidebar-nav a.nav-brand { color: #f252ca; }
+      .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .7rem .82rem;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text);
+        font-size: .95rem;
+        font-weight: 600;
+        transition: background .15s, color .15s, transform .15s;
+      }
+      .sidebar-nav a:hover { background: var(--brand-soft); color: var(--brand-strong); transform: translateX(2px); }
+      .sidebar-nav a.active { font-weight: 700; background: var(--brand-soft); color: var(--brand-strong); }
+      .sidebar-nav a.nav-brand {
+        color: var(--brand);
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1.05rem;
+        letter-spacing: .2px;
+      }
       .sidebar-nav a i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
       .sidebar-user { display: flex; align-items: center; gap: .65rem; padding: .65rem .75rem; margin-bottom: .5rem; }
       .sidebar-user img, .sidebar-user .avatar-sm-placeholder { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-      .sidebar-user .avatar-sm-placeholder { background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; }
-      .sidebar-user span { font-size: .9rem; font-weight: 600; color: #333; }
-      .sidebar-bottom { border-top: 1px solid #eee; padding-top: 1rem; margin-top: .5rem; }
-      .sidebar-bottom a, .sidebar-bottom form { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; text-decoration: none; color: #333; font-size: .95rem; font-weight: 500; transition: background .15s; }
-      .sidebar-bottom a:hover, .sidebar-bottom button:hover { background: #f0f0f0; }
-      .sidebar-bottom button { background: none; border: none; cursor: pointer; font-size: .95rem; font-weight: 500; color: #333; display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 8px; width: 100%; transition: background .15s; }
+      .sidebar-user .avatar-sm-placeholder { background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; }
+      .sidebar-user span { font-size: .9rem; font-weight: 700; color: var(--text); }
+      .sidebar-bottom { border-top: 1px solid var(--line); padding-top: 1rem; margin-top: .5rem; }
+      .sidebar-bottom a, .sidebar-bottom form { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 12px; text-decoration: none; color: var(--text); font-size: .95rem; font-weight: 600; transition: background .15s, color .15s; }
+      .sidebar-bottom a:hover, .sidebar-bottom button:hover { background: var(--brand-soft); color: var(--brand-strong); }
+      .sidebar-bottom button { background: none; border: none; cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 12px; width: 100%; transition: background .15s, color .15s; }
       .sidebar-bottom button i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
+      .theme-toggle-btn {
+        margin-top: .55rem;
+        background: none;
+        border: 1px solid var(--line);
+        cursor: pointer;
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .58rem .72rem;
+        border-radius: 12px;
+        width: 100%;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .theme-toggle-btn:hover { background: var(--brand-soft); color: var(--brand-strong); border-color: color-mix(in srgb, var(--brand) 44%, var(--line)); }
+      .theme-toggle-btn .theme-dot {
+        width: .56rem;
+        height: .56rem;
+        border-radius: 999px;
+        background: var(--brand);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 22%, transparent);
+        flex-shrink: 0;
+      }
 
       .main-content { margin-left: max(200px, calc(50vw - 270px)); flex: 1; min-height: 100vh; }
-      .container { max-width: 540px; padding: 0; }
+      .container { max-width: 620px; padding: 1rem 0 2rem; }
 
       /* Shared */
-      .btn { display: inline-block; padding: .45rem 1rem; border: none; border-radius: 4px; font-size: .9rem; cursor: pointer; text-decoration: none; }
-      .btn-primary { background: #f252ca; color: #fff; }
-      .btn-primary:hover { background: #d946b0; }
-      .btn-secondary { background: #eee; color: #333; }
-      .btn-secondary:hover { background: #ddd; }
-      .card { background: #fff; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-      h1, h2, h3 { color: #222; }
-      input, textarea, select { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; margin-top: .25rem; }
-      input:focus, textarea:focus { outline: none; border-color: #f252ca; }
+      .btn { display: inline-block; padding: .48rem 1rem; border: none; border-radius: 11px; font-size: .9rem; cursor: pointer; text-decoration: none; font-weight: 700; }
+      .btn-primary { background: var(--brand); color: #fff; }
+      .btn-primary:hover { background: var(--brand-strong); }
+      .btn-secondary { background: #f2ebe4; color: var(--text); }
+      .btn-secondary:hover { background: #eadfd5; }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 12px 28px rgba(92, 62, 38, .08); }
+      h1, h2, h3 { color: var(--text); font-family: "Space Grotesk", "Manrope", sans-serif; letter-spacing: .1px; }
+      input, textarea, select { width: 100%; padding: .58rem .64rem; border: 1px solid #d6c8bb; border-radius: 10px; font-size: .98rem; margin-top: .25rem; background: var(--surface-soft); color: var(--text); }
+      input:focus, textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(239, 90, 60, .14); }
       label { font-weight: 600; display: block; margin-top: .75rem; }
-      .form-help { font-size: .8rem; color: #888; }
+      .form-help { font-size: .8rem; color: var(--muted); }
       .errorlist { color: #c00; list-style: none; font-size: .85rem; }
+
+      @media (max-width: 920px) {
+        body { display: block; }
+        .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid var(--line); align-items: stretch; padding: .8rem .75rem; box-shadow: none; }
+        .sidebar-nav { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: .4rem; }
+        .sidebar-bottom { display: none; }
+        .main-content { margin-left: 0; }
+        .container { max-width: 100%; padding: .7rem .6rem 1.5rem; }
+      }
     </style>
     {% block extra_css %}{% endblock %}
   </head>
@@ -83,6 +194,467 @@
         {% block content %}{% endblock %}
       </main>
     </div>
+
+    <script>
+      (function () {
+        const interactionStateKey = 'faves-interaction-scroll-y';
+        const themeStorageKey = 'faves-theme';
+
+        function getStoredTheme() {
+          try {
+            return localStorage.getItem(themeStorageKey);
+          } catch (error) {
+            return null;
+          }
+        }
+
+        function setStoredTheme(theme) {
+          try {
+            localStorage.setItem(themeStorageKey, theme);
+          } catch (error) {
+            return;
+          }
+        }
+
+        function updateThemeButton(theme) {
+          const button = document.getElementById('themeToggle');
+          const label = document.getElementById('themeToggleLabel');
+          if (!button || !label) {
+            return;
+          }
+
+          const isNight = theme === 'night';
+          button.setAttribute('aria-pressed', isNight ? 'true' : 'false');
+          label.textContent = isNight ? 'Switch to Warm' : 'Switch to Night';
+        }
+
+        function applyTheme(theme) {
+          const resolvedTheme = theme === 'night' ? 'night' : 'warm';
+          document.body.setAttribute('data-theme', resolvedTheme);
+          setStoredTheme(resolvedTheme);
+          updateThemeButton(resolvedTheme);
+        }
+
+        const preferredTheme = getStoredTheme();
+        if (preferredTheme === 'night' || preferredTheme === 'warm') {
+          applyTheme(preferredTheme);
+        } else {
+          applyTheme('warm');
+        }
+
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+          const currentTheme = document.body.getAttribute('data-theme') === 'night' ? 'night' : 'warm';
+          applyTheme(currentTheme === 'night' ? 'warm' : 'night');
+        });
+
+        function parseActionType(action) {
+          if (!action) {
+            return null;
+          }
+
+          if (/\/posts\/\d+\/like\/?$/.test(action)) {
+            return 'post-like';
+          }
+          if (/\/posts\/\d+\/rate\/?$/.test(action)) {
+            return 'post-rate';
+          }
+          if (/\/comments\/\d+\/like\/?$/.test(action)) {
+            return 'comment-like';
+          }
+          if (/\/posts\/\d+\/comment\/?$/.test(action)) {
+            return 'post-comment';
+          }
+
+          return null;
+        }
+
+        function updatePostLikeUi(action, payload) {
+          document.querySelectorAll('form').forEach(form => {
+            if (form.action !== action) {
+              return;
+            }
+
+            const button = form.querySelector('.action-btn');
+            button?.classList.toggle('liked', Boolean(payload.liked));
+
+            const actionGroup = form.closest('.action-group');
+            if (!actionGroup) {
+              return;
+            }
+
+            let count = actionGroup.querySelector('.count:not(.rating-count)');
+            if (!count) {
+              count = document.createElement('span');
+              count.className = 'count';
+              actionGroup.appendChild(count);
+            }
+            count.textContent = String(payload.likes_count ?? 0);
+          });
+        }
+
+        function updateCommentLikeUi(action, payload) {
+          document.querySelectorAll('form.comment-like-form').forEach(form => {
+            if (form.action !== action) {
+              return;
+            }
+
+            const button = form.querySelector('.comment-like-btn');
+            const count = form.closest('.comment-like-controls')?.querySelector('.comment-like-count');
+            button?.classList.toggle('liked', Boolean(payload.liked));
+            if (count) {
+              count.textContent = String(payload.likes_count ?? 0);
+            }
+          });
+        }
+
+        function updatePostRateUi(action, payload) {
+          document.querySelectorAll('form[data-rate-form]').forEach(form => {
+            if (form.action !== action) {
+              return;
+            }
+
+            const ratingInput = form.querySelector('input[name="rating"]');
+            if (ratingInput) {
+              ratingInput.value = payload.current_user_rating ?? '';
+            }
+
+            const button = form.querySelector('.action-btn');
+            button?.classList.toggle('rated', Boolean(payload.current_user_rating));
+
+            const actionGroup = form.closest('.action-group');
+            if (!actionGroup) {
+              return;
+            }
+
+            let count = actionGroup.querySelector('.count.rating-count');
+            if (!count) {
+              count = document.createElement('span');
+              count.className = 'count rating-count';
+              actionGroup.appendChild(count);
+            }
+
+            const ratingsCount = Number(payload.ratings_count || 0);
+            if (!ratingsCount || payload.avg_rating === null || payload.avg_rating === undefined) {
+              count.textContent = '';
+              return;
+            }
+
+            const avg = Number(payload.avg_rating);
+            const avgText = Number.isFinite(avg) ? avg.toFixed(1) : String(payload.avg_rating);
+            count.textContent = `${avgText} (${ratingsCount})`;
+          });
+        }
+
+        function updatePostCommentCount(action, payload) {
+          const match = action.match(/\/posts\/(\d+)\/comment\/?$/);
+          if (!match) {
+            return;
+          }
+
+          const postId = match[1];
+          const countValue = String(payload.comments_count ?? 0);
+
+          document.querySelectorAll(`form[action*="/posts/${postId}/comment/"]`).forEach(form => {
+            const postCard = form.closest('.post-card');
+            const commentActionGroup = postCard?.querySelector('[data-comment-toggle]')?.closest('.action-group');
+            if (!commentActionGroup) {
+              return;
+            }
+
+            let count = commentActionGroup.querySelector('.count');
+            if (!count) {
+              count = document.createElement('span');
+              count.className = 'count';
+              commentActionGroup.appendChild(count);
+            }
+            count.textContent = countValue;
+          });
+        }
+
+        function escapeHtml(value) {
+          return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+        }
+
+        function buildCommentLikeControls(commentId, csrfToken, nextValue) {
+          return `
+            <div class="comment-like-controls">
+              <form method="post" action="/comments/${commentId}/like/" class="comment-like-form">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(csrfToken)}">
+                <input type="hidden" name="next" value="${escapeHtml(nextValue)}">
+                <button type="submit" class="comment-like-btn" aria-label="Like comment">
+                  <i class="ci-Heart_01"></i>
+                </button>
+              </form>
+              <span class="comment-like-count">0</span>
+            </div>
+          `;
+        }
+
+        function buildCommentItemHtml(comment, csrfToken, nextValue) {
+          const avatarHtml = comment.avatar_url
+            ? `<img src="${escapeHtml(comment.avatar_url)}" alt="" class="comment-avatar">`
+            : `<div class="comment-avatar-placeholder">${escapeHtml(comment.username_initial)}</div>`;
+
+          return `
+            <div class="comment-item">
+              ${avatarHtml}
+              <div class="comment-body">
+                <p class="comment-text"><strong>${escapeHtml(comment.username)}</strong>${escapeHtml(comment.text)}</p>
+                <div class="comment-meta-row">
+                  <span class="comment-date">${escapeHtml(comment.created_at)}</span>
+                  ${buildCommentLikeControls(comment.id, csrfToken, nextValue)}
+                </div>
+                <button type="button" class="reply-btn" data-reply-parent="${comment.id}" data-reply-username="${escapeHtml(comment.username)}">Reply</button>
+              </div>
+            </div>
+          `;
+        }
+
+        function appendCommentToInline(postId, commentHtml, parentId) {
+          document.querySelectorAll(`form[action*="/posts/${postId}/comment/"]`).forEach(form => {
+            const panel = form.closest('[data-inline-comments]');
+            if (!panel) {
+              return;
+            }
+
+            const list = panel.querySelector('.inline-comments-list');
+            if (!list) {
+              return;
+            }
+
+            const empty = list.querySelector('.comment-empty');
+            if (empty) {
+              empty.remove();
+            }
+
+            if (!parentId) {
+              list.insertAdjacentHTML('beforeend', commentHtml);
+              return;
+            }
+
+            const replyBtn = list.querySelector(`.reply-btn[data-reply-parent="${parentId}"]`);
+            const commentBody = replyBtn?.closest('.comment-body');
+            if (!commentBody) {
+              list.insertAdjacentHTML('beforeend', commentHtml);
+              return;
+            }
+
+            let repliesContainer = commentBody.querySelector('.comment-replies');
+            let repliesToggle = commentBody.querySelector('[data-replies-toggle]');
+            if (!repliesContainer) {
+              repliesToggle = document.createElement('button');
+              repliesToggle.type = 'button';
+              repliesToggle.className = 'replies-toggle';
+              repliesToggle.setAttribute('data-replies-toggle', '');
+              repliesToggle.setAttribute('data-replies-count', '0');
+              repliesToggle.setAttribute('data-dynamic-toggle', '1');
+              repliesToggle.textContent = 'View replies (0)';
+              commentBody.appendChild(repliesToggle);
+
+              repliesContainer = document.createElement('div');
+              repliesContainer.className = 'comment-replies active';
+              commentBody.appendChild(repliesContainer);
+            }
+
+            repliesContainer.insertAdjacentHTML('beforeend', commentHtml);
+            const nextCount = Number.parseInt(repliesToggle.dataset.repliesCount || '0', 10) + 1;
+            repliesToggle.dataset.repliesCount = String(nextCount);
+            repliesToggle.textContent = `View replies (${nextCount})`;
+          });
+        }
+
+        function appendCommentToModal(commentHtml, parentId) {
+          const modalList = document.getElementById('commentModalList');
+          if (!modalList) {
+            return;
+          }
+
+          const empty = modalList.querySelector('.comment-empty');
+          if (empty) {
+            empty.remove();
+          }
+
+          if (!parentId) {
+            modalList.insertAdjacentHTML('beforeend', commentHtml);
+            return;
+          }
+
+          const replyBtn = modalList.querySelector(`.reply-btn[data-reply-parent="${parentId}"]`);
+          const commentBody = replyBtn?.closest('.comment-body');
+          if (!commentBody) {
+            modalList.insertAdjacentHTML('beforeend', commentHtml);
+            return;
+          }
+
+          let repliesContainer = commentBody.querySelector('.comment-replies');
+          let repliesToggle = commentBody.querySelector('[data-replies-toggle]');
+          if (!repliesContainer) {
+            repliesToggle = document.createElement('button');
+            repliesToggle.type = 'button';
+            repliesToggle.className = 'replies-toggle';
+            repliesToggle.setAttribute('data-replies-toggle', '');
+            repliesToggle.setAttribute('data-replies-count', '0');
+            repliesToggle.textContent = 'View replies (0)';
+            commentBody.appendChild(repliesToggle);
+
+            repliesContainer = document.createElement('div');
+            repliesContainer.className = 'comment-replies active';
+            commentBody.appendChild(repliesContainer);
+          }
+
+          repliesContainer.insertAdjacentHTML('beforeend', commentHtml);
+          const nextCount = Number.parseInt(repliesToggle.dataset.repliesCount || '0', 10) + 1;
+          repliesToggle.dataset.repliesCount = String(nextCount);
+          repliesToggle.textContent = `View replies (${nextCount})`;
+        }
+
+        function restoreScrollIfNeeded() {
+          const savedPath = sessionStorage.getItem('faves-interaction-path');
+          const savedY = sessionStorage.getItem(interactionStateKey);
+          if (!savedY || savedPath !== window.location.pathname) {
+            return;
+          }
+
+          sessionStorage.removeItem(interactionStateKey);
+          sessionStorage.removeItem('faves-interaction-path');
+          window.scrollTo(0, Number(savedY));
+        }
+
+        restoreScrollIfNeeded();
+
+        document.addEventListener('click', event => {
+          const replyBtn = event.target.closest('[data-inline-comments] .reply-btn');
+          if (replyBtn) {
+            const panel = replyBtn.closest('[data-inline-comments]');
+            const parentInput = panel?.querySelector('[data-reply-parent-input]');
+            const hint = panel?.querySelector('[data-replying-hint]');
+            const user = panel?.querySelector('[data-replying-user]');
+            const textarea = panel?.querySelector('textarea[name="text"]');
+
+            if (parentInput && hint && user && textarea) {
+              parentInput.value = replyBtn.dataset.replyParent || '';
+              user.textContent = replyBtn.dataset.replyUsername || '';
+              hint.classList.add('active');
+              textarea.placeholder = `Reply to ${user.textContent}...`;
+              textarea.focus();
+            }
+            return;
+          }
+
+          const repliesToggle = event.target.closest('[data-inline-comments] [data-replies-toggle][data-dynamic-toggle="1"]');
+          if (!repliesToggle) {
+            return;
+          }
+
+          const thread = repliesToggle.parentElement?.querySelector('.comment-replies');
+          if (!thread) {
+            return;
+          }
+
+          const isOpen = thread.classList.toggle('active');
+          const count = repliesToggle.dataset.repliesCount || '0';
+          repliesToggle.textContent = isOpen ? 'Hide replies' : `View replies (${count})`;
+        });
+
+        document.addEventListener('submit', async event => {
+          const form = event.target.closest('form');
+          if (!form || form.method.toLowerCase() !== 'post') {
+            return;
+          }
+
+          const actionType = parseActionType(form.action);
+          if (!actionType) {
+            return;
+          }
+
+          const isAsync = actionType === 'post-like' || actionType === 'post-rate' || actionType === 'comment-like' || actionType === 'post-comment';
+          if (!isAsync) {
+            sessionStorage.setItem(interactionStateKey, String(window.scrollY));
+            sessionStorage.setItem('faves-interaction-path', window.location.pathname);
+            return;
+          }
+
+          event.preventDefault();
+
+          try {
+            const response = await fetch(form.action, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              body: new FormData(form),
+              credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+              throw new Error('Request failed');
+            }
+
+            const payload = await response.json();
+
+            if (actionType === 'post-like') {
+              updatePostLikeUi(form.action, payload);
+              return;
+            }
+            if (actionType === 'comment-like') {
+              updateCommentLikeUi(form.action, payload);
+              return;
+            }
+            if (actionType === 'post-rate') {
+              updatePostRateUi(form.action, payload);
+              return;
+            }
+            if (actionType === 'post-comment') {
+              updatePostCommentCount(form.action, payload);
+
+              const textArea = form.querySelector('textarea[name="text"]');
+              const parentInput = form.querySelector('input[name="parent_id"]');
+              const replyHint = form.querySelector('[data-replying-hint], #commentModalReplyingHint');
+              const replyUser = form.querySelector('[data-replying-user], #commentModalReplyingUser');
+              const nextInput = form.querySelector('input[name="next"]');
+              const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+
+              if (payload.created && payload.comment) {
+                const actionMatch = form.action.match(/\/posts\/(\d+)\/comment\/?$/);
+                const postId = actionMatch ? actionMatch[1] : null;
+                const nextValue = nextInput ? nextInput.value : window.location.pathname;
+                const csrfToken = csrfInput ? csrfInput.value : '';
+                const commentHtml = buildCommentItemHtml(payload.comment, csrfToken, nextValue);
+
+                if (postId) {
+                  appendCommentToInline(postId, commentHtml, payload.comment.parent_id);
+                }
+                appendCommentToModal(commentHtml, payload.comment.parent_id);
+              }
+
+              if (textArea) {
+                textArea.value = '';
+                textArea.placeholder = 'Add a comment...';
+              }
+              if (parentInput) {
+                parentInput.value = '';
+              }
+              if (replyHint) {
+                replyHint.classList.remove('active');
+              }
+              if (replyUser) {
+                replyUser.textContent = '';
+              }
+              return;
+            }
+          } catch (error) {
+            sessionStorage.setItem(interactionStateKey, String(window.scrollY));
+            sessionStorage.setItem('faves-interaction-path', window.location.pathname);
+            form.submit();
+          }
+        });
+      })();
+    </script>
 
   </body>
 </html>
