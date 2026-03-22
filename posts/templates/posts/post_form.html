@@ -1,22 +1,332 @@
 {% extends "base.html" %}
 {% block title %}New Post — Faves{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  /* Form Card Container */
+  .post-form-card {
+    background: #fffdf9;
+    border-radius: 16px;
+    box-shadow: 0 14px 32px rgba(92, 62, 38, .11);
+    border: 1px solid #eadfd5;
+    padding: 1.5rem 2rem; /* Reduced vertical padding */
+    max-width: 680px; /* Made the container wider */
+    margin: 1.5rem auto; /* Tighter outer margin */
+  }
+  .post-form-card h2 {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+    color: #222;
+    font-size: 1.4rem;
+  }
+  .post-form-desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem; /* Tighter gap below description */
+  }
+
+  /* Map Styling */
+  #map {
+    height: 240px; /* More compact map */
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid #eadfd5;
+    z-index: 1;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  /* Input Group Styling */
+  .form-group {
+    margin-bottom: 0.85rem; /* Tighter gaps between fields */
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .form-control {
+    width: 100%;
+    padding: 0.6rem 0.85rem; /* Tighter input padding */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #333;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    background: #fff;
+    box-sizing: border-box;
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: #e85d04;
+    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.15);
+  }
+  textarea.form-control {
+    resize: vertical;
+    min-height: 80px; /* More compact textarea */
+  }
+
+  /* Side-by-Side Coordinates Grid */
+  .coords-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+
+  /* Modern File Upload Zone */
+  .file-upload-wrapper {
+    position: relative;
+    border: 2px dashed #eadfd5;
+    border-radius: 12px;
+    padding: 1.25rem 1rem; /* More compact upload box */
+    text-align: center;
+    background: #fff7ee;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    margin-bottom: 1.25rem;
+  }
+  .file-upload-wrapper:hover {
+    background: #fff2e0;
+    border-color: #e85d04;
+  }
+  .file-upload-wrapper input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .file-upload-content {
+    pointer-events: none;
+  }
+  .file-upload-icon {
+    width: 26px;
+    height: 26px;
+    color: #a97c50;
+    margin: 0 auto 0.4rem;
+    display: block;
+  }
+  .file-upload-text {
+    font-weight: 600;
+    color: #a97c50;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .file-upload-hint {
+    font-size: 0.75rem;
+    color: #b08a5a;
+    margin-top: 0.2rem;
+  }
+
+  /* Primary Button */
+  .btn-submit {
+    background: #e85d04;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    width: 100%;
+  }
+  .btn-submit:hover {
+    background: #d05303;
+  }
+  .btn-submit:active {
+    transform: scale(0.98);
+  }
+
+  /* Back link */
+  .back-link {
+    display: block;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .back-link:hover {
+    color: #e85d04;
+    text-decoration: underline;
+  }
+
+  /* Night Mode Support */
+  body[data-theme="night"] .post-form-card {
+    background: #18202b;
+    border-color: #2a3445;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .32);
+  }
+  body[data-theme="night"] .post-form-card h2 { color: #eef3ff; }
+  body[data-theme="night"] .post-form-desc { color: #9cabc2; }
+  body[data-theme="night"] #map { border-color: #2a3445; }
+  body[data-theme="night"] .form-group label { color: #b2bfd5; }
+  body[data-theme="night"] .form-control {
+    background: #111722;
+    border-color: #334055;
+    color: #eef3ff;
+  }
+  body[data-theme="night"] .form-control:focus {
+    border-color: #ff8f57;
+    box-shadow: 0 0 0 3px rgba(255, 143, 87, 0.15);
+  }
+  body[data-theme="night"] .file-upload-wrapper {
+    background: #111722;
+    border-color: #334055;
+  }
+  body[data-theme="night"] .file-upload-wrapper:hover {
+    background: #1a2432;
+    border-color: #ff8f57;
+  }
+  body[data-theme="night"] .file-upload-icon { color: #a4b0c6; }
+  body[data-theme="night"] .file-upload-text { color: #a4b0c6; }
+  body[data-theme="night"] .file-upload-hint { color: #7a869a; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:540px; margin:2rem auto;">
+<div class="post-form-card">
   <h2>New Post</h2>
+  <p class="post-form-desc">
+    Click the map or enter coordinates to set a location.
+  </p>
+
+  <div id="map"></div>
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
-    <p>
-      <label for="id_images">Photos</label>
-      <input type="file" name="images" id="id_images" multiple accept="image/*">
-    </p>
-    <button type="submit" class="btn btn-primary" style="margin-top:1rem; width:100%;">Post</button>
+    
+    {% for field in form %}
+      {% if field.name != 'lat' and field.name != 'lng' %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small style="color:#888; font-size:0.8rem;">{{ field.help_text }}</small>{% endif %}
+          {% for error in field.errors %}
+            <div style="color:#e53935; font-size:0.85rem; margin-top:0.25rem;">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="coords-grid">
+      <div class="form-group">
+        <label for="{{ form.lat.id_for_label }}">Latitude</label>
+        {{ form.lat }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.lng.id_for_label }}">Longitude</label>
+        {{ form.lng }}
+      </div>
+    </div>
+    
+    <div class="file-upload-wrapper">
+      <input type="file" name="images" id="id_images" multiple accept="image/*" onchange="updateFileName(this)">
+      <div class="file-upload-content">
+        <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        <p class="file-upload-text" id="file-upload-text">Click or drag photos here</p>
+        <p class="file-upload-hint">You can select multiple images</p>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">Publish Post</button>
   </form>
 
-  <p style="margin-top:1rem; text-align:center; font-size:.9rem;">
-    <a href="{% url 'feed' %}">Back to feed</a>
-  </p>
+  <a href="{% url 'feed' %}" class="back-link">Cancel & return to feed</a>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// --- Styling Helper: Inject Faves classes into Django's default inputs ---
+document.addEventListener("DOMContentLoaded", function() {
+  const inputs = document.querySelectorAll('.post-form-card input[type="text"], .post-form-card input[type="number"], .post-form-card textarea');
+  inputs.forEach(input => {
+    input.classList.add('form-control');
+  });
+});
+
+// --- File Upload Helper: Show number of selected files ---
+function updateFileName(input) {
+  const textElement = document.getElementById('file-upload-text');
+  if (input.files && input.files.length > 1) {
+    textElement.textContent = `${input.files.length} photos selected`;
+    textElement.style.color = '#e85d04';
+  } else if (input.files && input.files.length === 1) {
+    textElement.textContent = input.files[0].name;
+    textElement.style.color = '#e85d04';
+  } else {
+    textElement.textContent = 'Click or drag photos here';
+    textElement.style.color = '';
+  }
+}
+
+// --- Map Logic ---
+document.addEventListener("DOMContentLoaded", function() {
+  const map = L.map('map').setView([47.1585, 27.6014], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  let marker;
+  const latInput = document.getElementById('id_lat');
+  const lngInput = document.getElementById('id_lng');
+
+  function updateMapFromInputs() {
+    if (!latInput || !lngInput) return;
+    
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      const newLatLng = [lat, lng];
+      if (marker) {
+        marker.setLatLng(newLatLng);
+      } else {
+        marker = L.marker(newLatLng).addTo(map);
+      }
+      map.setView(newLatLng, map.getZoom());
+    }
+  }
+
+  if (latInput && latInput.value && lngInput && lngInput.value) {
+    updateMapFromInputs();
+    map.setView([parseFloat(latInput.value), parseFloat(lngInput.value)], 15);
+  }
+
+  if (latInput && lngInput) {
+    latInput.addEventListener('input', updateMapFromInputs);
+    lngInput.addEventListener('input', updateMapFromInputs);
+  }
+
+  map.on('click', function(e) {
+    const clickedLat = e.latlng.lat;
+    const clickedLng = e.latlng.lng;
+
+    if (marker) {
+      marker.setLatLng(e.latlng);
+    } else {
+      marker = L.marker(e.latlng).addTo(map);
+    }
+
+    if (latInput && lngInput) {
+      latInput.value = clickedLat.toFixed(6);
+      lngInput.value = clickedLng.toFixed(6);
+    }
+  });
+});
+</script>
 {% endblock %}

@@ -2,16 +2,18 @@
 {% block title %}Feed — Faves{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
   /* Site-matching tabs for post */
   .post-tabs {
     display: flex;
     gap: 0;
-      margin: 0;
+    margin: 0;
     background: #fffdf9;
     border-radius: 0;
     overflow: hidden;
-      width: 100%;
+    width: 100%;
     border: 1px solid #eadfd5;
     border-bottom: none;
     box-shadow: none;
@@ -44,7 +46,7 @@
   }
   .post-tab-content { padding: 0; }
   .post-location-placeholder {
-    min-height: 580px;
+    min-height: 480px;
     background: #fff7ee;
     border-radius: 0;
     display: flex;
@@ -123,18 +125,23 @@
   .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
   .comment-modal-backdrop.active { display: flex; }
   .comment-modal { width: min(980px, 100%); height: min(700px, 92vh); background: #fff; border-radius: 8px; overflow: hidden; display: grid; grid-template-columns: 1.15fr .85fr; }
-  .comment-modal-left { background: #111; overflow: hidden; position: relative; }
+  
+  /* MODAL LEFT SIDE UPDATES */
+  .comment-modal-left { background: #111; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .modal-tab-panel { flex: 1; position: relative; min-height: 0; }
+  
   .comment-modal-images { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   .comment-modal-image { width: 100%; height: 100%; object-fit: contain; }
   .comment-modal-no-image { color: #f0f0f0; text-align: center; padding: 2rem .8rem; font-size: .95rem; }
-  .comment-image-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(255,255,255,.88); color: #333; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .comment-image-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(255,255,255,.88); color: #333; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 5; }
   .comment-image-nav.prev { left: 10px; }
   .comment-image-nav.next { right: 10px; }
   .comment-image-nav[disabled] { opacity: .45; cursor: default; }
-  .comment-image-dots { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 8px; }
+  .comment-image-dots { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 5; }
   .comment-image-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: rgba(255,255,255,.45); cursor: pointer; padding: 0; }
   .comment-image-dot.active { background: #fff; }
-  .comment-modal-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+
+  .comment-modal-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; border-left: 1px solid #eee; }
   .comment-modal-top { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: .8rem .9rem; }
   .comment-modal-top h3 { margin: 0; font-size: .97rem; color: #222; }
   .comment-modal-close { background: none; border: none; font-size: 1.35rem; color: #666; cursor: pointer; line-height: 1; }
@@ -172,8 +179,22 @@
   .comment-empty { color: #888; font-size: .9rem; }
   .comment-form { border-top: 1px solid #eee; padding: .65rem .85rem; }
   .comment-modal-right .comment-form { flex-shrink: 0; }
-  .comment-input-row { display: flex; align-items: center; gap: .35rem; border: 1px solid #ddd; border-radius: 999px; padding: .16rem .35rem .16rem .7rem; }
-  .comment-form textarea { flex: 1; resize: none; min-height: 22px; max-height: 90px; border: none; outline: none; background: transparent; font: inherit; font-size: .88rem; line-height: 22px; overflow-y: auto; padding: 7px 0 0 0; }
+  
+  .comment-input-row { 
+    display: flex; align-items: center; gap: .35rem; border: 1px solid #ddd; 
+    border-radius: 999px; padding: .16rem .35rem .16rem .7rem; 
+    transition: border-color 0.2s, box-shadow 0.2s; 
+  }
+  .comment-input-row:focus-within {
+    border-color: #e85d04;
+    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.15);
+  }
+  .comment-form textarea { 
+    flex: 1; resize: none; min-height: 22px; max-height: 90px; border: none; 
+    outline: none; box-shadow: none; -webkit-appearance: none; background: transparent; 
+    font: inherit; font-size: .88rem; line-height: 22px; overflow-y: auto; padding: 7px 0 0 0; 
+  }
+
   .comment-send { border: none; background: none; color: #8e8e8e; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: .25rem; margin-left: -2px; }
   .comment-send:hover { color: #f252ca; }
   .comment-send i { font-size: 1.15rem; }
@@ -181,16 +202,14 @@
   .replying-hint.active { display: flex; }
   .replying-hint button { border: none; background: none; color: #999; cursor: pointer; font-size: .85rem; }
   .comment-login-note { border-top: 1px solid #eee; padding: .9rem; color: #777; font-size: .88rem; }
-  .comment-modal-right .comment-login-note { flex-shrink: 0; }
   .inline-comments { display: none; margin-top: .55rem; border-top: 1px solid #eee; padding-top: .55rem; }
   .inline-comments.active { display: block; }
   .inline-comments-list { max-height: 320px; overflow-y: auto; padding-right: .2rem; }
-  .inline-comments .comment-form { border-top: none; padding: .45rem 0 0; }
-  .post-actions .action-btn.comments-open i { color: #4d4d4d; }
 
   @media (max-width: 880px) {
     .comment-modal { grid-template-columns: 1fr; height: min(760px, 94vh); }
-    .comment-modal-left { max-height: 38vh; }
+    .comment-modal-left { max-height: 45vh; }
+    .comment-modal-right { border-left: none; border-top: 1px solid #eee; }
   }
 
   body[data-theme="night"] .post-card { background: #18202b; border-color: #2a3445; box-shadow: 0 16px 34px rgba(0, 0, 0, .32); }
@@ -199,34 +218,12 @@
   body[data-theme="night"] .post-title-line,
   body[data-theme="night"] .comment-text,
   body[data-theme="night"] .comment-modal-top h3 { color: #eef3ff; }
-  body[data-theme="night"] .post-date,
-  body[data-theme="night"] .post-desc,
-  body[data-theme="night"] .post-meta,
-  body[data-theme="night"] .comment-date,
-  body[data-theme="night"] .comment-empty,
-  body[data-theme="night"] .comment-like-count,
-  body[data-theme="night"] .comment-login-note { color: #9cabc2; }
-  body[data-theme="night"] .post-actions .action-btn i,
-  body[data-theme="night"] .post-menu-btn,
-  body[data-theme="night"] .comment-like-btn,
-  body[data-theme="night"] .comment-send,
-  body[data-theme="night"] .reply-btn { color: #a4b0c6; }
-  body[data-theme="night"] .post-actions .action-btn:hover i,
-  body[data-theme="night"] .post-menu-btn:hover,
-  body[data-theme="night"] .comment-like-btn:hover,
-  body[data-theme="night"] .comment-send:hover,
-  body[data-theme="night"] .reply-btn:hover,
-  body[data-theme="night"] .replies-toggle:hover { color: #ff8f57; }
-  body[data-theme="night"] .comment-input-row { border-color: #334055; background: #1a2432; }
-  body[data-theme="night"] .comment-form textarea { color: #e9effb; }
-  body[data-theme="night"] .comment-form,
-  body[data-theme="night"] .comment-login-note,
-  body[data-theme="night"] .comment-modal-top,
-  body[data-theme="night"] .inline-comments { border-color: #2d394c; }
+  body[data-theme="night"] .post-tabs { background: #111722; border-color: #2a3445; }
+  body[data-theme="night"] .tab-btn { color: #9cabc2; }
+  body[data-theme="night"] .tab-btn.active { color: #ff8f57; border-color: #ff8f57; }
   body[data-theme="night"] .comment-modal { background: #18202b; }
-  body[data-theme="night"] .comment-modal-right { background: #18202b; }
-  body[data-theme="night"] .comment-modal-close { color: #b2bfd5; }
-  body[data-theme="night"] .comment-modal-backdrop { background: rgba(7, 10, 16, .76); }
+  body[data-theme="night"] .comment-modal-right { background: #18202b; border-color: #2d394c; }
+  body[data-theme="night"] .comment-modal-top, body[data-theme="night"] .comment-form { border-color: #2d394c; }
 </style>
 {% endblock %}
 
@@ -256,8 +253,6 @@
     </div>
     <div class="post-tab-content">
       <div id="images-{{ post.id }}" class="tab-panel" style="display: block;">
-
-
       {% if post.images.all %}
       <div class="post-images" data-carousel data-image-trigger>
         {% for img in post.images.all %}
@@ -272,8 +267,12 @@
       {% endif %}
       </div>
       <div id="location-{{ post.id }}" class="tab-panel" style="display: none;">
-        <div class="post-location-placeholder">
-          Location map will appear here.
+        <div class="post-location-placeholder" style="padding:0;">
+          {% if post.lat and post.lng %}
+            <div id="map-{{ post.id }}" class="leaflet-map-container" style="width:100%;height:100%;min-height:480px;" data-lat="{{ post.lat }}" data-lng="{{ post.lng }}"></div>
+          {% else %}
+            Location not available.
+          {% endif %}
         </div>
       </div>
     </div>
@@ -374,20 +373,6 @@
                       <p class="comment-text"><strong>{{ reply.user.username }}</strong>{{ reply.text }}</p>
                       <div class="comment-meta-row">
                         <span class="comment-date">{{ reply.created_at|date:"M d, Y H:i" }}</span>
-                        <div class="comment-like-controls">
-                          {% if user.is_authenticated %}
-                          <form method="post" action="{% url 'comment_like' reply.id %}" class="comment-like-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{% url 'feed' %}">
-                            <button type="submit" class="comment-like-btn {% if reply.current_user_liked %}liked{% endif %}" aria-label="Like comment">
-                              <i class="ci-Heart_01"></i>
-                            </button>
-                          </form>
-                          {% else %}
-                          <span class="comment-like-btn"><i class="ci-Heart_01"></i></span>
-                          {% endif %}
-                          <span class="comment-like-count">{{ reply.likes_count|default_if_none:0 }}</span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -416,12 +401,11 @@
             </button>
           </div>
         </form>
-        {% else %}
-        <div class="comment-login-note">Log in to leave a comment.</div>
         {% endif %}
       </div>
 
-      <div class="comment-modal-data" style="display:none;">
+      <div class="comment-modal-data" style="display:none;" 
+           data-lat="{{ post.lat }}" data-lng="{{ post.lng }}">
         <div data-modal-images>
           <div class="comment-modal-images">
             {% for img in post.images.all %}
@@ -433,73 +417,19 @@
         </div>
         <div data-modal-comments>
           {% for comment in post.top_level_comments %}
-            <div class="comment-item">
-              {% if comment.user.profile.avatar %}
-                <img src="{{ comment.user.profile.avatar.url }}" alt="" class="comment-avatar">
-              {% else %}
-                <div class="comment-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
-              {% endif %}
-              <div class="comment-body">
-                <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
-                <div class="comment-meta-row">
-                  <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
-                  <div class="comment-like-controls">
-                    {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'comment_like' comment.id %}" class="comment-like-form">
-                      {% csrf_token %}
-                      <input type="hidden" name="next" value="{% url 'feed' %}">
-                      <button type="submit" class="comment-like-btn {% if comment.current_user_liked %}liked{% endif %}" aria-label="Like comment">
-                        <i class="ci-Heart_01"></i>
-                      </button>
-                    </form>
-                    {% else %}
-                    <span class="comment-like-btn"><i class="ci-Heart_01"></i></span>
-                    {% endif %}
-                    <span class="comment-like-count">{{ comment.likes_count|default_if_none:0 }}</span>
+             <div class="comment-item">
+                {% if comment.user.profile.avatar %}
+                  <img src="{{ comment.user.profile.avatar.url }}" alt="" class="comment-avatar">
+                {% else %}
+                  <div class="comment-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
+                {% endif %}
+                <div class="comment-body">
+                  <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
+                  <div class="comment-meta-row">
+                    <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
                   </div>
                 </div>
-                {% if user.is_authenticated %}
-                <button type="button" class="reply-btn" data-reply-parent="{{ comment.id }}" data-reply-username="{{ comment.user.username }}">Reply</button>
-                {% endif %}
-
-                {% if comment.thread_replies %}
-                <button type="button" class="replies-toggle" data-replies-toggle data-replies-count="{{ comment.thread_replies|length }}">View replies ({{ comment.thread_replies|length }})</button>
-                <div class="comment-replies">
-                  {% for reply in comment.thread_replies %}
-                  <div class="comment-item">
-                    {% if reply.user.profile.avatar %}
-                      <img src="{{ reply.user.profile.avatar.url }}" alt="" class="comment-avatar">
-                    {% else %}
-                      <div class="comment-avatar-placeholder">{{ reply.user.username|first|upper }}</div>
-                    {% endif %}
-                    <div class="comment-body">
-                      <p class="comment-text"><strong>{{ reply.user.username }}</strong>{{ reply.text }}</p>
-                      <div class="comment-meta-row">
-                        <span class="comment-date">{{ reply.created_at|date:"M d, Y H:i" }}</span>
-                        <div class="comment-like-controls">
-                          {% if user.is_authenticated %}
-                          <form method="post" action="{% url 'comment_like' reply.id %}" class="comment-like-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{% url 'feed' %}">
-                            <button type="submit" class="comment-like-btn {% if reply.current_user_liked %}liked{% endif %}" aria-label="Like comment">
-                              <i class="ci-Heart_01"></i>
-                            </button>
-                          </form>
-                          {% else %}
-                          <span class="comment-like-btn"><i class="ci-Heart_01"></i></span>
-                          {% endif %}
-                          <span class="comment-like-count">{{ reply.likes_count|default_if_none:0 }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {% endfor %}
-                </div>
-                {% endif %}
               </div>
-            </div>
-          {% empty %}
-            <p class="comment-empty">No comments yet.</p>
           {% endfor %}
         </div>
       </div>
@@ -514,17 +444,8 @@
 <div class="rating-modal-backdrop" id="ratingModal" aria-hidden="true">
   <div class="rating-modal" role="dialog" aria-modal="true" aria-labelledby="rating-modal-title">
     <h3 id="rating-modal-title">Rate this post</h3>
-    <p>Choose a score from 1 to 10.</p>
     <div class="rating-grid" id="ratingChoices">
-      <button type="button" class="rating-choice" data-value="1">1</button>
-      <button type="button" class="rating-choice" data-value="2">2</button>
-      <button type="button" class="rating-choice" data-value="3">3</button>
-      <button type="button" class="rating-choice" data-value="4">4</button>
-      <button type="button" class="rating-choice" data-value="5">5</button>
-      <button type="button" class="rating-choice" data-value="6">6</button>
-      <button type="button" class="rating-choice" data-value="7">7</button>
-      <button type="button" class="rating-choice" data-value="8">8</button>
-      <button type="button" class="rating-choice" data-value="9">9</button>
+      {% for i in "123456789" %}<button type="button" class="rating-choice" data-value="{{forloop.counter}}">{{forloop.counter}}</button>{% endfor %}
       <button type="button" class="rating-choice" data-value="10">10</button>
     </div>
     <div class="rating-modal-actions">
@@ -535,12 +456,25 @@
 
 <div class="comment-modal-backdrop" id="commentModal" aria-hidden="true">
   <div class="comment-modal" role="dialog" aria-modal="true" aria-labelledby="comment-modal-title">
+    
     <div class="comment-modal-left">
-      <div class="comment-modal-images" id="commentModalImages"></div>
-      <button type="button" class="comment-image-nav prev" id="commentImagePrev" aria-label="Previous image">&#10094;</button>
-      <button type="button" class="comment-image-nav next" id="commentImageNext" aria-label="Next image">&#10095;</button>
-      <div class="comment-image-dots" id="commentImageDots"></div>
+      <div class="post-tabs modal-tabs">
+        <button class="tab-btn active" data-modal-tab="modal-images">Images</button>
+        <button class="tab-btn" data-modal-tab="modal-location">Location</button>
+      </div>
+
+      <div id="modal-images" class="modal-tab-panel" style="display: block;">
+        <div class="comment-modal-images" id="commentModalImages"></div>
+        <button type="button" class="comment-image-nav prev" id="commentImagePrev" aria-label="Previous image">&#10094;</button>
+        <button type="button" class="comment-image-nav next" id="commentImageNext" aria-label="Next image">&#10095;</button>
+        <div class="comment-image-dots" id="commentImageDots"></div>
+      </div>
+
+      <div id="modal-location" class="modal-tab-panel" style="display: none; height: calc(100% - 45px);">
+        <div id="modal-map" style="width:100%; height:100%;"></div>
+      </div>
     </div>
+
     <div class="comment-modal-right">
       <div class="comment-modal-top">
         <h3 id="comment-modal-title">Post</h3>
@@ -552,30 +486,31 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'feed' %}">
         <input type="hidden" name="parent_id" value="" id="commentModalParentId">
-        <div class="replying-hint" id="commentModalReplyingHint">
-          <span>Replying to <strong id="commentModalReplyingUser"></strong></span>
-          <button type="button" id="commentModalReplyCancel">&times;</button>
-        </div>
         <div class="comment-input-row">
-          <textarea name="text" id="commentModalText" placeholder="Add a comment..." maxlength="1000" required></textarea>
-          <button type="submit" class="comment-send" aria-label="Send comment">
-            <i class="ci-Paper_Plane"></i>
-          </button>
+          <textarea name="text" id="commentModalText" placeholder="Add a comment..." required></textarea>
+          <button type="submit" class="comment-send"><i class="ci-Paper_Plane"></i></button>
         </div>
       </form>
-      {% else %}
-      <div class="comment-login-note">Log in to leave a comment.</div>
       {% endif %}
     </div>
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
+// --- Global State ---
+const initializedMaps = {};
+let modalMap = null;
+let modalMarker = null;
+let commentModalImagesData = [];
+let commentModalImageIndex = 0;
+
+// --- Feed Carousel Logic ---
 document.querySelectorAll('[data-carousel]').forEach(carousel => {
   const imgs = carousel.querySelectorAll('img');
   const dots = carousel.querySelectorAll('.dot');
   let cur = 0;
-
   function show(i) {
     imgs[cur].classList.remove('active');
     dots[cur].classList.remove('active');
@@ -583,295 +518,147 @@ document.querySelectorAll('[data-carousel]').forEach(carousel => {
     imgs[cur].classList.add('active');
     dots[cur].classList.add('active');
   }
-
-  dots.forEach(dot => {
-    dot.addEventListener('click', () => show(parseInt(dot.dataset.index)));
-  });
+  dots.forEach(dot => dot.addEventListener('click', () => show(parseInt(dot.dataset.index))));
 });
 
-// Tab switching logic for post tabs
+// --- Feed Tab Logic (Images/Location) ---
 document.querySelectorAll('.post-card').forEach(card => {
   const tabBtns = card.querySelectorAll('.tab-btn');
   const panels = card.querySelectorAll('.tab-panel');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', function() {
+      if(btn.dataset.modalTab) return; // Ignore modal tab buttons in this loop
       tabBtns.forEach(b => b.classList.remove('active'));
       panels.forEach(p => p.style.display = 'none');
       btn.classList.add('active');
       const target = card.querySelector('#' + btn.dataset.tab);
-      if (target) target.style.display = 'block';
+      if (target) {
+        target.style.display = 'block';
+        if (btn.dataset.tab.startsWith('location-')) {
+          const mapDiv = target.querySelector('.leaflet-map-container');
+          if (mapDiv) {
+            const mapId = mapDiv.id;
+            if (!initializedMaps[mapId]) {
+              const lat = parseFloat(mapDiv.dataset.lat), lng = parseFloat(mapDiv.dataset.lng);
+              if (!isNaN(lat) && !isNaN(lng)) {
+                const map = L.map(mapId).setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+                L.marker([lat, lng]).addTo(map);
+                initializedMaps[mapId] = map;
+              }
+            } else { initializedMaps[mapId].invalidateSize(); }
+          }
+        }
+      }
     });
   });
 });
 
-const ratingModal = document.getElementById('ratingModal');
-const ratingChoices = ratingModal.querySelectorAll('.rating-choice');
-const ratingCancel = document.getElementById('ratingCancel');
-let activeRateForm = null;
-
-function closeRatingModal() {
-  ratingModal.classList.remove('active');
-  ratingModal.setAttribute('aria-hidden', 'true');
-  activeRateForm = null;
-}
-
-function openRatingModal(form, currentValue) {
-  activeRateForm = form;
-  ratingChoices.forEach(choice => {
-    choice.classList.toggle('active', choice.dataset.value === currentValue);
-  });
-  ratingModal.classList.add('active');
-  ratingModal.setAttribute('aria-hidden', 'false');
-}
-
-document.querySelectorAll('[data-rate-trigger]').forEach(btn => {
+// --- Modal Tab Logic ---
+document.querySelectorAll('[data-modal-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
-    const form = btn.closest('[data-rate-form]');
-    const ratingInput = form.querySelector('input[name="rating"]');
-    openRatingModal(form, ratingInput.value || btn.dataset.currentRating || '');
-  });
-});
-
-ratingChoices.forEach(choice => {
-  choice.addEventListener('click', () => {
-    if (!activeRateForm) {
-      return;
+    const targetId = btn.dataset.modalTab;
+    document.querySelectorAll('[data-modal-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.modal-tab-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(targetId).style.display = 'block';
+    if (targetId === 'modal-location' && modalMap) {
+      setTimeout(() => modalMap.invalidateSize(), 50);
     }
-
-    const ratingInput = activeRateForm.querySelector('input[name="rating"]');
-    ratingInput.value = choice.dataset.value;
-    activeRateForm.submit();
   });
 });
 
-ratingCancel.addEventListener('click', closeRatingModal);
-
-ratingModal.addEventListener('click', (event) => {
-  if (event.target === ratingModal) {
-    closeRatingModal();
-  }
-});
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && ratingModal.classList.contains('active')) {
-    closeRatingModal();
-  }
-});
-
+// --- Comment Modal Logic ---
 const commentModal = document.getElementById('commentModal');
-const commentModalClose = document.getElementById('commentModalClose');
-const commentModalTitle = document.getElementById('comment-modal-title');
 const commentModalImages = document.getElementById('commentModalImages');
-const commentImagePrev = document.getElementById('commentImagePrev');
-const commentImageNext = document.getElementById('commentImageNext');
-const commentImageDots = document.getElementById('commentImageDots');
 const commentModalList = document.getElementById('commentModalList');
-const commentModalForm = document.getElementById('commentModalForm');
-const commentModalText = document.getElementById('commentModalText');
-const commentModalParentId = document.getElementById('commentModalParentId');
-const commentModalReplyingHint = document.getElementById('commentModalReplyingHint');
-const commentModalReplyingUser = document.getElementById('commentModalReplyingUser');
-const commentModalReplyCancel = document.getElementById('commentModalReplyCancel');
-let commentModalImagesData = [];
-let commentModalImageIndex = 0;
-
-function clearModalReplyTarget() {
-  if (!commentModalParentId || !commentModalReplyingHint || !commentModalText) {
-    return;
-  }
-  commentModalParentId.value = '';
-  commentModalReplyingHint.classList.remove('active');
-  commentModalText.placeholder = 'Add a comment...';
-}
-
-function setModalReplyTarget(parentId, username) {
-  if (!commentModalParentId || !commentModalReplyingHint || !commentModalReplyingUser || !commentModalText) {
-    return;
-  }
-  commentModalParentId.value = String(parentId);
-  commentModalReplyingUser.textContent = username;
-  commentModalReplyingHint.classList.add('active');
-  commentModalText.placeholder = `Reply to ${username}...`;
-  commentModalText.focus();
-}
 
 function renderCommentModalImage() {
   if (!commentModalImagesData.length) {
-    commentModalImages.innerHTML = '<div class="comment-modal-no-image">No images for this post.</div>';
-    commentImageDots.innerHTML = '';
-    commentImagePrev.style.display = 'none';
-    commentImageNext.style.display = 'none';
+    commentModalImages.innerHTML = '<div class="comment-modal-no-image">No images.</div>';
     return;
   }
-
   const current = commentModalImagesData[commentModalImageIndex];
   commentModalImages.innerHTML = `<img src="${current.src}" alt="${current.alt}" class="comment-modal-image">`;
-  commentImagePrev.style.display = commentModalImagesData.length > 1 ? 'flex' : 'none';
-  commentImageNext.style.display = commentModalImagesData.length > 1 ? 'flex' : 'none';
-  commentImagePrev.disabled = commentModalImageIndex === 0;
-  commentImageNext.disabled = commentModalImageIndex === commentModalImagesData.length - 1;
-
-  commentImageDots.innerHTML = commentModalImagesData
-    .map((_, idx) => `<button type="button" class="comment-image-dot ${idx === commentModalImageIndex ? 'active' : ''}" data-comment-image-index="${idx}"></button>`)
-    .join('');
-}
-
-function closeCommentModal() {
-  clearModalReplyTarget();
-  commentModal.classList.remove('active');
-  commentModal.setAttribute('aria-hidden', 'true');
+  document.getElementById('commentImagePrev').disabled = commentModalImageIndex === 0;
+  document.getElementById('commentImageNext').disabled = commentModalImageIndex === commentModalImagesData.length - 1;
 }
 
 function openCommentModalFromCard(card) {
-    const username = card.querySelector('.post-header-left a')?.textContent?.trim() || 'Post';
-    const title = card.querySelector('.post-title-line')?.textContent?.trim() || '';
-    const modalData = card.querySelector('.comment-modal-data');
+  const username = card.querySelector('.post-header-left a')?.textContent?.trim();
+  const title = card.querySelector('.post-title-line')?.textContent?.trim();
+  const modalData = card.querySelector('.comment-modal-data');
+  const lat = parseFloat(modalData.dataset.lat);
+  const lng = parseFloat(modalData.dataset.lng);
 
-    commentModalTitle.textContent = `${username} - ${title}`;
-    commentModalList.innerHTML = modalData.querySelector('[data-modal-comments]').innerHTML;
+  document.getElementById('comment-modal-title').textContent = `${username} - ${title}`;
+  commentModalList.innerHTML = modalData.querySelector('[data-modal-comments]').innerHTML;
 
-    commentModalImagesData = Array.from(modalData.querySelectorAll('[data-modal-images] img')).map(img => ({
-      src: img.getAttribute('src') || '',
-      alt: img.getAttribute('alt') || 'Post image',
-    }));
-    commentModalImageIndex = 0;
-    renderCommentModalImage();
+  document.querySelector('[data-modal-tab="modal-images"]').click();
 
-    if (commentModalForm) {
-      const postLikeForm = card.querySelector('form[action*="/like/"]');
-      commentModalForm.action = postLikeForm ? postLikeForm.action.replace('/like/', '/comment/') : '';
-      commentModalText.value = '';
-      clearModalReplyTarget();
-      commentModalText.focus();
+  // Images logic
+  commentModalImagesData = Array.from(modalData.querySelectorAll('[data-modal-images] img')).map(img => ({
+    src: img.getAttribute('src'),
+    alt: img.getAttribute('alt'),
+  }));
+  commentModalImageIndex = 0;
+  renderCommentModalImage();
+
+  // Map logic
+  if (!isNaN(lat) && !isNaN(lng)) {
+    if (!modalMap) {
+      modalMap = L.map('modal-map').setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(modalMap);
+      modalMarker = L.marker([lat, lng]).addTo(modalMap);
+    } else {
+      modalMap.setView([lat, lng], 15);
+      modalMarker.setLatLng([lat, lng]);
     }
+  }
 
-    commentModal.classList.add('active');
-    commentModal.setAttribute('aria-hidden', 'false');
+  commentModal.classList.add('active');
 }
 
+// Global Event Listeners
 document.querySelectorAll('.post-card').forEach(card => {
-  card.addEventListener('click', (event) => {
-    const interactiveTarget = event.target.closest(
-      '[data-comment-toggle], form, button, a, textarea, input, .carousel-dots, [data-inline-comments]'
-    );
-    if (interactiveTarget) {
-      return;
+  card.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-comment-toggle], form, button, a, textarea, input, .carousel-dots, [data-inline-comments]')) {
+      openCommentModalFromCard(card);
     }
-    openCommentModalFromCard(card);
   });
 });
+
+document.getElementById('commentModalClose').addEventListener('click', () => {
+  commentModal.classList.remove('active');
+});
+
+document.getElementById('commentImagePrev').addEventListener('click', () => { if(commentModalImageIndex > 0) { commentModalImageIndex--; renderCommentModalImage(); }});
+document.getElementById('commentImageNext').addEventListener('click', () => { if(commentModalImageIndex < commentModalImagesData.length-1) { commentModalImageIndex++; renderCommentModalImage(); }});
+
+// --- Rating Modal Logic ---
+let activeRateForm = null;
+const ratingModal = document.getElementById('ratingModal');
+document.querySelectorAll('[data-rate-trigger]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeRateForm = btn.closest('[data-rate-form]');
+    ratingModal.classList.add('active');
+  });
+});
+document.querySelectorAll('.rating-choice').forEach(choice => {
+  choice.addEventListener('click', () => {
+    if(activeRateForm) {
+      activeRateForm.querySelector('input[name="rating"]').value = choice.dataset.value;
+      activeRateForm.submit();
+    }
+  });
+});
+document.getElementById('ratingCancel').addEventListener('click', () => ratingModal.classList.remove('active'));
 
 document.querySelectorAll('[data-comment-toggle]').forEach(btn => {
   btn.addEventListener('click', () => {
-    const card = btn.closest('.post-card');
-    const panel = card.querySelector('[data-inline-comments]');
-    const isOpen = panel.classList.toggle('active');
-    btn.classList.toggle('comments-open', isOpen);
+    const panel = btn.closest('.post-card').querySelector('[data-inline-comments]');
+    panel.classList.toggle('active');
   });
-});
-
-document.querySelectorAll('[data-inline-comments]').forEach(panel => {
-  const parentInput = panel.querySelector('[data-reply-parent-input]');
-  const hint = panel.querySelector('[data-replying-hint]');
-  const user = panel.querySelector('[data-replying-user]');
-  const cancel = panel.querySelector('[data-reply-cancel]');
-  const textarea = panel.querySelector('textarea[name="text"]');
-
-  if (!parentInput || !hint || !user || !textarea) {
-    return;
-  }
-
-  const clearInlineReply = () => {
-    parentInput.value = '';
-    hint.classList.remove('active');
-    textarea.placeholder = 'Add a comment...';
-  };
-
-  panel.querySelectorAll('.reply-btn').forEach(replyBtn => {
-    replyBtn.addEventListener('click', () => {
-      parentInput.value = replyBtn.dataset.replyParent || '';
-      user.textContent = replyBtn.dataset.replyUsername || '';
-      hint.classList.add('active');
-      textarea.placeholder = `Reply to ${user.textContent}...`;
-      textarea.focus();
-    });
-  });
-
-    panel.querySelectorAll('[data-replies-toggle]').forEach(toggleBtn => {
-      toggleBtn.addEventListener('click', () => {
-        const thread = toggleBtn.parentElement.querySelector('.comment-replies');
-        if (!thread) {
-          return;
-        }
-
-        const isOpen = thread.classList.toggle('active');
-        const count = toggleBtn.dataset.repliesCount || '0';
-        toggleBtn.textContent = isOpen ? 'Hide replies' : `View replies (${count})`;
-      });
-    });
-
-  cancel?.addEventListener('click', clearInlineReply);
-});
-
-commentModalClose?.addEventListener('click', closeCommentModal);
-
-commentModalList.addEventListener('click', (event) => {
-  const replyBtn = event.target.closest('.reply-btn');
-  if (!replyBtn) {
-    const repliesToggle = event.target.closest('[data-replies-toggle]');
-    if (!repliesToggle) {
-      return;
-    }
-
-    const thread = repliesToggle.parentElement.querySelector('.comment-replies');
-    if (!thread) {
-      return;
-    }
-
-    const isOpen = thread.classList.toggle('active');
-    const count = repliesToggle.dataset.repliesCount || '0';
-    repliesToggle.textContent = isOpen ? 'Hide replies' : `View replies (${count})`;
-    return;
-  }
-  setModalReplyTarget(replyBtn.dataset.replyParent || '', replyBtn.dataset.replyUsername || '');
-});
-
-commentModalReplyCancel?.addEventListener('click', clearModalReplyTarget);
-
-commentImagePrev.addEventListener('click', () => {
-  if (commentModalImageIndex > 0) {
-    commentModalImageIndex -= 1;
-    renderCommentModalImage();
-  }
-});
-
-commentImageNext.addEventListener('click', () => {
-  if (commentModalImageIndex < commentModalImagesData.length - 1) {
-    commentModalImageIndex += 1;
-    renderCommentModalImage();
-  }
-});
-
-commentImageDots.addEventListener('click', (event) => {
-  const target = event.target.closest('[data-comment-image-index]');
-  if (!target) {
-    return;
-  }
-
-  commentModalImageIndex = Number.parseInt(target.dataset.commentImageIndex, 10) || 0;
-  renderCommentModalImage();
-});
-
-commentModal.addEventListener('click', (event) => {
-  if (event.target === commentModal) {
-    closeCommentModal();
-  }
-});
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && commentModal.classList.contains('active')) {
-    closeCommentModal();
-  }
 });
 </script>
 {% endblock %}
