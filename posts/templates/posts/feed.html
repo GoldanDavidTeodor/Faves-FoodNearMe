@@ -3,6 +3,59 @@
 
 {% block extra_css %}
 <style>
+  /* Site-matching tabs for post */
+  .post-tabs {
+    display: flex;
+    gap: 0;
+      margin: 0;
+    background: #fffdf9;
+    border-radius: 0;
+    overflow: hidden;
+      width: 100%;
+    border: 1px solid #eadfd5;
+    border-bottom: none;
+    box-shadow: none;
+  }
+  .tab-btn {
+    flex: 1 1 0;
+    padding: 0.7rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #a97c50;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-bottom 0.15s, background 0.15s;
+    outline: none;
+    border-radius: 0;
+    letter-spacing: 0.01em;
+  }
+  .tab-btn.active {
+    color: #e85d04;
+    border-bottom: 3px solid #e85d04;
+    background: none;
+    z-index: 1;
+    box-shadow: none;
+  }
+  .tab-btn:not(.active):hover {
+    background: #fff2e0;
+    color: #e85d04;
+  }
+  .post-tab-content { padding: 0; }
+  .post-location-placeholder {
+    min-height: 580px;
+    background: #fff7ee;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b08a5a;
+    font-size: 1.05rem;
+    font-style: italic;
+    border: 1px dashed #eadfd5;
+    margin: 0 1rem 1rem 1rem;
+  }
   .post-card {
     background: #fffdf9;
     border-radius: 16px;
@@ -197,19 +250,33 @@
       </button>
     </div>
 
-    {% if post.images.all %}
-    <div class="post-images" data-carousel data-image-trigger>
-      {% for img in post.images.all %}
-        <img src="{{ img.image.url }}" alt="{{ post.title }}" {% if forloop.first %}class="active"{% endif %}>
-      {% endfor %}
+    <div class="post-tabs">
+      <button class="tab-btn active" data-tab="images-{{ post.id }}">Images</button>
+      <button class="tab-btn" data-tab="location-{{ post.id }}">Location</button>
+    </div>
+    <div class="post-tab-content">
+      <div id="images-{{ post.id }}" class="tab-panel" style="display: block;">
 
-      <div class="carousel-dots">
+
+      {% if post.images.all %}
+      <div class="post-images" data-carousel data-image-trigger>
         {% for img in post.images.all %}
-          <button class="dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></button>
+          <img src="{{ img.image.url }}" alt="{{ post.title }}" {% if forloop.first %}class="active"{% endif %}>
         {% endfor %}
+        <div class="carousel-dots">
+          {% for img in post.images.all %}
+            <button class="dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      </div>
+      <div id="location-{{ post.id }}" class="tab-panel" style="display: none;">
+        <div class="post-location-placeholder">
+          Location map will appear here.
+        </div>
       </div>
     </div>
-    {% endif %}
 
     <div class="post-footer">
       <div class="post-actions">
@@ -519,6 +586,21 @@ document.querySelectorAll('[data-carousel]').forEach(carousel => {
 
   dots.forEach(dot => {
     dot.addEventListener('click', () => show(parseInt(dot.dataset.index)));
+  });
+});
+
+// Tab switching logic for post tabs
+document.querySelectorAll('.post-card').forEach(card => {
+  const tabBtns = card.querySelectorAll('.tab-btn');
+  const panels = card.querySelectorAll('.tab-panel');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.style.display = 'none');
+      btn.classList.add('active');
+      const target = card.querySelector('#' + btn.dataset.tab);
+      if (target) target.style.display = 'block';
+    });
   });
 });
 
