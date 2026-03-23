@@ -124,11 +124,67 @@
 
   .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
   .comment-modal-backdrop.active { display: flex; }
-  .comment-modal { width: min(980px, 100%); height: min(700px, 92vh); background: #fff; border-radius: 8px; overflow: hidden; display: grid; grid-template-columns: 1.15fr .85fr; }
   
-  /* MODAL LEFT SIDE UPDATES */
-  .comment-modal-left { background: #111; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  /* ==========================================
+     MODAL REDESIGN - ALINIERE ȘI CULORI
+     ========================================== */
+  .comment-modal { 
+    width: min(980px, 100%); 
+    height: min(700px, 92vh); 
+    background: #fff; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    display: grid; 
+    grid-template-columns: 1.15fr .85fr;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4); 
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .comment-modal-top, .modal-tabs {
+    height: 60px;
+    box-sizing: border-box;
+  }
+
+  .comment-modal-left { 
+    background: #000; 
+    overflow: hidden; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column; 
+  }
+
   .modal-tab-panel { flex: 1; position: relative; min-height: 0; }
+  
+  .modal-tabs {
+    background: #000;
+    border: none;
+    border-bottom: 1px solid #222; 
+  }
+
+  .modal-tabs .tab-btn {
+    color: #777; 
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    height: 100%;
+  }
+
+  .modal-tabs .tab-btn:not(.active):hover {
+    background: #111;
+    color: #ccc;
+  }
+
+  .modal-tabs .tab-btn.active {
+    background: transparent;
+    color: #fff;
+    border-bottom: 3px solid #e85d04; 
+  }
+
+  #modal-location {
+    height: calc(100% - 60px) !important;
+  }
   
   .comment-modal-images { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   .comment-modal-image { width: 100%; height: 100%; object-fit: contain; }
@@ -141,18 +197,32 @@
   .comment-image-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: rgba(255,255,255,.45); cursor: pointer; padding: 0; }
   .comment-image-dot.active { background: #fff; }
 
-  .comment-modal-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; border-left: 1px solid #eee; }
-  .comment-modal-top { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: .8rem .9rem; }
-  .comment-modal-top h3 { margin: 0; font-size: .97rem; color: #222; }
+  .comment-modal-right { 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 0; 
+    min-height: 0; 
+    height: 100%; 
+    background: #fff;
+    border-left: none; 
+  }
+  .comment-modal-top { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 1.2rem;
+    border-bottom: 1px solid #eaeaea; 
+  }
+  .comment-modal-top h3 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #222; }
   .comment-modal-close { background: none; border: none; font-size: 1.35rem; color: #666; cursor: pointer; line-height: 1; }
+  
   .comment-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: .75rem .9rem; }
   .comment-list, .inline-comments-list { scrollbar-width: thin; scrollbar-color: #f252ca transparent; }
   .comment-list::-webkit-scrollbar, .inline-comments-list::-webkit-scrollbar { width: 8px; }
   .comment-list::-webkit-scrollbar-track, .inline-comments-list::-webkit-scrollbar-track { background: transparent; }
   .comment-list::-webkit-scrollbar-thumb, .inline-comments-list::-webkit-scrollbar-thumb { background: #f252ca; border-radius: 999px; border: 1px solid #ffd1ec; }
   .comment-list::-webkit-scrollbar-thumb:hover, .inline-comments-list::-webkit-scrollbar-thumb:hover { background: #e340b8; }
-  .comment-list::-webkit-scrollbar-button, .inline-comments-list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
-  .comment-list::-webkit-scrollbar-corner, .inline-comments-list::-webkit-scrollbar-corner { background: transparent; }
+  
   .comment-item { display: flex; align-items: flex-start; gap: .55rem; margin-bottom: .7rem; }
   .comment-avatar, .comment-avatar-placeholder { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
   .comment-avatar-placeholder { background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; }
@@ -167,23 +237,23 @@
   .reply-btn:hover { color: #f252ca; }
   .comment-date { display: block; font-size: .74rem; color: #999; margin-top: .15rem; }
   .comment-meta-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .55rem; margin-top: .15rem; }
-  .comment-meta-row .comment-date { margin-top: 0; }
   .comment-like-controls { display: inline-flex; align-items: center; gap: .25rem; }
   .comment-like-form { display: inline-flex; margin: 0; }
   .comment-like-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: inline-flex; align-items: center; color: #999; }
   .comment-like-btn i { font-size: .9rem; }
   .comment-like-btn:hover { color: #e85d04; }
   .comment-like-btn.liked { color: #e53935; }
-  .comment-like-btn.liked:hover { color: #c62828; }
   .comment-like-count { font-size: .74rem; color: #888; }
   .comment-empty { color: #888; font-size: .9rem; }
+  
   .comment-form { border-top: 1px solid #eee; padding: .65rem .85rem; }
-  .comment-modal-right .comment-form { flex-shrink: 0; }
+  .comment-modal-right .comment-form { flex-shrink: 0; padding: 1rem 1.2rem; background: #fafafa; border-top: 1px solid #eaeaea; }
   
   .comment-input-row { 
     display: flex; align-items: center; gap: .35rem; border: 1px solid #ddd; 
     border-radius: 999px; padding: .16rem .35rem .16rem .7rem; 
     transition: border-color 0.2s, box-shadow 0.2s; 
+    background: #fff;
   }
   .comment-input-row:focus-within {
     border-color: #e85d04;
@@ -201,7 +271,6 @@
   .replying-hint { font-size: .75rem; color: #7a7a7a; margin-bottom: .35rem; display: none; align-items: center; justify-content: space-between; }
   .replying-hint.active { display: flex; }
   .replying-hint button { border: none; background: none; color: #999; cursor: pointer; font-size: .85rem; }
-  .comment-login-note { border-top: 1px solid #eee; padding: .9rem; color: #777; font-size: .88rem; }
   .inline-comments { display: none; margin-top: .55rem; border-top: 1px solid #eee; padding-top: .55rem; }
   .inline-comments.active { display: block; }
   .inline-comments-list { max-height: 320px; overflow-y: auto; padding-right: .2rem; }
@@ -212,6 +281,7 @@
     .comment-modal-right { border-left: none; border-top: 1px solid #eee; }
   }
 
+  /* Night Mode */
   body[data-theme="night"] .post-card { background: #18202b; border-color: #2a3445; box-shadow: 0 16px 34px rgba(0, 0, 0, .32); }
   body[data-theme="night"] .post-images { background: #111722; }
   body[data-theme="night"] .post-header a,
@@ -224,6 +294,8 @@
   body[data-theme="night"] .comment-modal { background: #18202b; }
   body[data-theme="night"] .comment-modal-right { background: #18202b; border-color: #2d394c; }
   body[data-theme="night"] .comment-modal-top, body[data-theme="night"] .comment-form { border-color: #2d394c; }
+  body[data-theme="night"] .comment-modal-right .comment-form { background: #111722; border-top: 1px solid #2d394c; }
+  body[data-theme="night"] .comment-input-row { background: #18202b; border-color: #3e4c63; }
 </style>
 {% endblock %}
 
@@ -405,7 +477,7 @@
       </div>
 
       <div class="comment-modal-data" style="display:none;" 
-           data-lat="{{ post.lat }}" data-lng="{{ post.lng }}">
+           data-lat="{{ post.lat }}" data-lng="{{ post.lng }}" data-post-id="{{ post.id }}">
         <div data-modal-images>
           <div class="comment-modal-images">
             {% for img in post.images.all %}
@@ -417,19 +489,31 @@
         </div>
         <div data-modal-comments>
           {% for comment in post.top_level_comments %}
-             <div class="comment-item">
-                {% if comment.user.profile.avatar %}
-                  <img src="{{ comment.user.profile.avatar.url }}" alt="" class="comment-avatar">
-                {% else %}
-                  <div class="comment-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
-                {% endif %}
-                <div class="comment-body">
-                  <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
-                  <div class="comment-meta-row">
-                    <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
-                  </div>
+            <div class="comment-item">
+              {% if comment.user.profile.avatar %}
+                <img src="{{ comment.user.profile.avatar.url }}" alt="" class="comment-avatar">
+              {% else %}
+                <div class="comment-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
+              {% endif %}
+              <div class="comment-body">
+                <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
+                <div class="comment-meta-row">
+                  <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
                 </div>
+                {% if comment.thread_replies %}
+                <button type="button" class="replies-toggle" data-replies-toggle data-replies-count="{{ comment.thread_replies|length }}">View replies ({{ comment.thread_replies|length }})</button>
+                <div class="comment-replies">
+                  {% for reply in comment.thread_replies %}
+                    <div class="comment-item">
+                      <div class="comment-body">
+                        <p class="comment-text"><strong>{{ reply.user.username }}</strong>{{ reply.text }}</p>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
               </div>
+            </div>
           {% endfor %}
         </div>
       </div>
@@ -456,25 +540,21 @@
 
 <div class="comment-modal-backdrop" id="commentModal" aria-hidden="true">
   <div class="comment-modal" role="dialog" aria-modal="true" aria-labelledby="comment-modal-title">
-    
     <div class="comment-modal-left">
       <div class="post-tabs modal-tabs">
         <button class="tab-btn active" data-modal-tab="modal-images">Images</button>
         <button class="tab-btn" data-modal-tab="modal-location">Location</button>
       </div>
-
       <div id="modal-images" class="modal-tab-panel" style="display: block;">
         <div class="comment-modal-images" id="commentModalImages"></div>
         <button type="button" class="comment-image-nav prev" id="commentImagePrev" aria-label="Previous image">&#10094;</button>
         <button type="button" class="comment-image-nav next" id="commentImageNext" aria-label="Next image">&#10095;</button>
         <div class="comment-image-dots" id="commentImageDots"></div>
       </div>
-
-      <div id="modal-location" class="modal-tab-panel" style="display: none; height: calc(100% - 45px);">
+      <div id="modal-location" class="modal-tab-panel" style="display: none;">
         <div id="modal-map" style="width:100%; height:100%;"></div>
       </div>
     </div>
-
     <div class="comment-modal-right">
       <div class="comment-modal-top">
         <h3 id="comment-modal-title">Post</h3>
@@ -486,6 +566,10 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'feed' %}">
         <input type="hidden" name="parent_id" value="" id="commentModalParentId">
+        <div class="replying-hint" data-replying-hint>
+          <span>Replying to <strong data-replying-user></strong></span>
+          <button type="button" data-reply-cancel>&times;</button>
+        </div>
         <div class="comment-input-row">
           <textarea name="text" id="commentModalText" placeholder="Add a comment..." required></textarea>
           <button type="submit" class="comment-send"><i class="ci-Paper_Plane"></i></button>
@@ -505,6 +589,73 @@ let modalMap = null;
 let modalMarker = null;
 let commentModalImagesData = [];
 let commentModalImageIndex = 0;
+
+// --- REPLIES TOGGLE LOGIC (Event Delegation Corectat) ---
+document.addEventListener('click', function(e) {
+  const toggleBtn = e.target.closest('[data-replies-toggle]');
+  if (toggleBtn) {
+    e.preventDefault();
+    e.stopPropagation(); // Previne bubbling-ul catre card sau modal
+
+    const repliesContainer = toggleBtn.nextElementSibling;
+    if (repliesContainer && repliesContainer.classList.contains('comment-replies')) {
+      const isVisible = repliesContainer.classList.toggle('active');
+      const count = toggleBtn.dataset.repliesCount || 0;
+      toggleBtn.textContent = isVisible ? `Hide replies` : `View replies (${count})`;
+    }
+  }
+});
+
+// --- REPLY & CANCEL REPLY LOGIC (Universal Feed + Modal) ---
+document.addEventListener('click', (e) => {
+  // 1. Când apăsăm pe butonul de "Reply"
+  const replyBtn = e.target.closest('.reply-btn');
+  if (replyBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Identificăm contextul: suntem in feed (post-card) sau in modal?
+    const container = replyBtn.closest('.comment-modal') || replyBtn.closest('.post-card');
+    
+    if (container) {
+      const form = container.querySelector('.comment-form');
+      if (form) {
+        // Setăm ID-ul părintelui in input-ul hidden
+        const parentInput = form.querySelector('[name="parent_id"]');
+        if (parentInput) parentInput.value = replyBtn.dataset.replyParent;
+        
+        // Afișăm hint-ul grafic ("Replying to...")
+        const hint = form.querySelector('.replying-hint');
+        if (hint) {
+          const userSpan = hint.querySelector('[data-replying-user]');
+          if (userSpan) userSpan.textContent = replyBtn.dataset.replyUsername;
+          hint.classList.add('active');
+        }
+        
+        // Focusăm câmpul de text
+        const textarea = form.querySelector('textarea');
+        if (textarea) textarea.focus();
+      }
+    }
+  }
+
+  // 2. Când apăsăm pe "X" pentru a anula răspunsul
+  const cancelReplyBtn = e.target.closest('[data-reply-cancel]');
+  if (cancelReplyBtn) {
+    e.preventDefault();
+    
+    const form = cancelReplyBtn.closest('.comment-form');
+    if (form) {
+      // Golim ID-ul părintelui
+      const parentInput = form.querySelector('[name="parent_id"]');
+      if (parentInput) parentInput.value = '';
+      
+      // Ascundem hint-ul grafic
+      const hint = form.querySelector('.replying-hint');
+      if (hint) hint.classList.remove('active');
+    }
+  }
+});
 
 // --- Feed Carousel Logic ---
 document.querySelectorAll('[data-carousel]').forEach(carousel => {
@@ -527,7 +678,7 @@ document.querySelectorAll('.post-card').forEach(card => {
   const panels = card.querySelectorAll('.tab-panel');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', function() {
-      if(btn.dataset.modalTab) return; // Ignore modal tab buttons in this loop
+      if(btn.dataset.modalTab) return; 
       tabBtns.forEach(b => b.classList.remove('active'));
       panels.forEach(p => p.style.display = 'none');
       btn.classList.add('active');
@@ -590,13 +741,19 @@ function openCommentModalFromCard(card) {
   const modalData = card.querySelector('.comment-modal-data');
   const lat = parseFloat(modalData.dataset.lat);
   const lng = parseFloat(modalData.dataset.lng);
+  const postId = modalData.dataset.postId;
 
   document.getElementById('comment-modal-title').textContent = `${username} - ${title}`;
   commentModalList.innerHTML = modalData.querySelector('[data-modal-comments]').innerHTML;
 
+  // Set URL pentru formularul din modal
+  const modalForm = document.getElementById('commentModalForm');
+  if (modalForm) {
+    modalForm.action = `/post/${postId}/comment/`; // Ajustează URL-ul conform rutei tale Django
+  }
+
   document.querySelector('[data-modal-tab="modal-images"]').click();
 
-  // Images logic
   commentModalImagesData = Array.from(modalData.querySelectorAll('[data-modal-images] img')).map(img => ({
     src: img.getAttribute('src'),
     alt: img.getAttribute('alt'),
@@ -604,7 +761,6 @@ function openCommentModalFromCard(card) {
   commentModalImageIndex = 0;
   renderCommentModalImage();
 
-  // Map logic
   if (!isNaN(lat) && !isNaN(lng)) {
     if (!modalMap) {
       modalMap = L.map('modal-map').setView([lat, lng], 15);
@@ -615,14 +771,14 @@ function openCommentModalFromCard(card) {
       modalMarker.setLatLng([lat, lng]);
     }
   }
-
   commentModal.classList.add('active');
 }
 
-// Global Event Listeners
+// Global Card Click
 document.querySelectorAll('.post-card').forEach(card => {
   card.addEventListener('click', (e) => {
-    if (!e.target.closest('[data-comment-toggle], form, button, a, textarea, input, .carousel-dots, [data-inline-comments]')) {
+    // Excludem click-urile pe interfețe, butoane sau form-uri din declanșarea modalului
+    if (!e.target.closest('[data-comment-toggle], form, button, a, textarea, input, .carousel-dots, [data-inline-comments], [data-replies-toggle]')) {
       openCommentModalFromCard(card);
     }
   });
