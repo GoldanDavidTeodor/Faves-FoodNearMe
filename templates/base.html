@@ -10,27 +10,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/krystonschwarze/coolicons@v4.1/Webfont/coolicons.css" />
     <style>
       :root {
-        --bg: #fff8f2;
-        --surface: #ffffff;
-        --surface-soft: #fffdf9;
-        --line: #eadfd5;
-        --text: #2a2018;
-        --muted: #7f7063;
-        --brand: #ef5a3c;
-        --brand-strong: #d9472a;
-        --brand-soft: #ffe9e2;
-      }
-
-      body[data-theme="night"] {
-        --bg: #11141a;
-        --surface: #171c24;
-        --surface-soft: #1c2330;
-        --line: #2a3240;
-        --text: #e8edf7;
-        --muted: #9aa9c1;
-        --brand: #ff8f57;
-        --brand-strong: #ff7a3e;
-        --brand-soft: #2a2f3a;
+        --bg: #000000;
+        --surface: rgba(22, 21, 20, .92);
+        --surface-strong: #161514;
+        --surface-soft: rgba(255, 255, 255, .06);
+        --line: rgba(255, 255, 255, .10);
+        --text: rgba(255,255,255,.92);
+        --muted: rgba(255,255,255,.62);
+        --brand: #b79093;
+        --brand-strong: #b79093;
+        --brand-soft: rgba(183, 144, 147, .16);
+        --radius: 18px;
       }
 
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,155 +28,177 @@
         font-family: "Manrope", "Segoe UI", sans-serif;
         line-height: 1.55;
         color: var(--text);
-        background:
-          radial-gradient(1200px 520px at -8% -10%, #ffd7be 0%, transparent 60%),
-          radial-gradient(900px 380px at 105% 6%, #ffecc8 0%, transparent 65%),
-          linear-gradient(180deg, #fff8f2 0%, #fff5ec 100%);
+        background: var(--bg);
         display: flex;
         min-height: 100vh;
         transition: background .28s ease, color .2s ease;
       }
 
-      body[data-theme="night"] {
-        background:
-          radial-gradient(1200px 520px at -8% -10%, #222d3f 0%, transparent 62%),
-          radial-gradient(900px 380px at 105% 6%, #2d2536 0%, transparent 65%),
-          linear-gradient(180deg, #0f1319 0%, #141a24 100%);
-      }
-
       /* Sidebar */
       .sidebar {
-        width: max(210px, calc(50vw - 280px));
-        background: color-mix(in srgb, var(--surface) 86%, transparent);
-        border-right: 1px solid var(--line);
-        box-shadow: 8px 0 28px rgba(95, 61, 34, .06);
-        backdrop-filter: blur(8px);
+        width: 250px;
+        background: var(--surface-strong);
+        border: 1px solid rgba(255, 255, 255, .08);
+        box-shadow: 0 18px 70px rgba(0, 0, 0, .55);
+        backdrop-filter: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
+        top: 16px;
+        left: 16px;
+        bottom: 16px;
         display: flex;
         flex-direction: column;
-        padding: 1.55rem 1rem;
+        padding: 1rem .95rem;
         z-index: 10;
-        align-items: flex-end;
+        align-items: stretch;
+        border-radius: 18px;
+        overflow-y: auto;
+        font-size: 13px;
       }
-      .sidebar-nav { list-style: none; flex: 1; display: flex; flex-direction: column; gap: .25rem; }
-      .sidebar-nav a {
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        color: var(--text);
+        text-decoration: none;
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: .3px;
+        margin-bottom: .65rem;
+        padding: .2rem .25rem;
+      }
+      .sidebar-brand i { font-size: 1.35rem; color: rgba(255,255,255,.92); }
+      .sidebar-nav { list-style: none; display: flex; flex-direction: column; gap: .2rem; }
+      .sidebar-nav a, .sidebar-nav span {
         display: flex;
         align-items: center;
         gap: .75rem;
-        padding: .7rem .82rem;
-        border-radius: 12px;
+        padding: .56rem .7rem;
+        border-radius: 14px;
         text-decoration: none;
-        color: var(--text);
-        font-size: .95rem;
+        color: rgba(255,255,255,.78);
+        font-size: .92rem;
         font-weight: 600;
         transition: background .15s, color .15s, transform .15s;
       }
-      .sidebar-nav a:hover { background: var(--brand-soft); color: var(--brand-strong); transform: translateX(2px); }
-      .sidebar-nav a.active { font-weight: 700; background: var(--brand-soft); color: var(--brand-strong); }
-      .sidebar-nav a.nav-brand {
-        color: var(--brand);
-        font-family: "Space Grotesk", "Manrope", sans-serif;
-        font-size: 1.05rem;
-        letter-spacing: .2px;
-      }
-      .sidebar-nav a i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
-      .sidebar-user { display: flex; align-items: center; gap: .65rem; padding: .65rem .75rem; margin-bottom: .5rem; }
-      .sidebar-user img, .sidebar-user .avatar-sm-placeholder { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-      .sidebar-user .avatar-sm-placeholder { background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; }
-      .sidebar-user span { font-size: .9rem; font-weight: 700; color: var(--text); }
-      .sidebar-bottom { border-top: 1px solid var(--line); padding-top: 1rem; margin-top: .5rem; }
-      .sidebar-bottom a, .sidebar-bottom form { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 12px; text-decoration: none; color: var(--text); font-size: .95rem; font-weight: 600; transition: background .15s, color .15s; }
-      .sidebar-bottom a:hover, .sidebar-bottom button:hover { background: var(--brand-soft); color: var(--brand-strong); }
-      .sidebar-bottom button { background: none; border: none; cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; border-radius: 12px; width: 100%; transition: background .15s, color .15s; }
-      .sidebar-bottom button i { font-size: 1.3rem; width: 1.5rem; text-align: center; }
-      .theme-toggle-btn {
-        margin-top: .55rem;
-        background: none;
-        border: 1px solid var(--line);
-        cursor: pointer;
-        font-size: .9rem;
-        font-weight: 700;
+      .sidebar-nav a:hover { background: rgba(255,255,255,.06); color: var(--text); transform: translateX(2px); }
+      .sidebar-nav a.active { font-weight: 750; background: rgba(255,255,255,.08); color: var(--text); }
+      .sidebar-nav i { font-size: 1.3rem; width: 1.5rem; text-align: center; color: rgba(255,255,255,.62); }
+      .sidebar-nav a:hover i, .sidebar-nav a.active i { color: var(--text); }
+      .sidebar-divider { height: 1px; background: rgba(255,255,255,.10); margin: .75rem 0; }
+      .sidebar-divider.tight { margin: .45rem 0 .65rem; }
+
+      /* Bottom "You" section (no card background) */
+      .sidebar-you { margin-top: auto; padding-top: .25rem; }
+      .sidebar-you-title { font-weight: 800; letter-spacing: .2px; color: rgba(255,255,255,.70); padding: .15rem .25rem; }
+
+      .sidebar-field {
+        width: 100%;
+        background: rgba(0,0,0,.22);
+        border: 1px solid rgba(255,255,255,.10);
         color: var(--text);
+        border-radius: 999px;
+        padding: .5rem .7rem;
+        font-weight: 650;
+        height: 34px;
+      }
+      .sidebar-field::placeholder { color: rgba(238,241,248,.5); }
+      .sidebar-row { display: flex; gap: .55rem; margin-top: .6rem; }
+      .sidebar-pill {
+        flex: 1;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.08);
+        color: color-mix(in srgb, var(--text) 88%, transparent);
+        border-radius: 999px;
+        padding: .42rem .65rem;
+        font-weight: 800;
+        font-size: .82rem;
+        cursor: default;
+        text-align: center;
+        user-select: none;
+      }
+      .sidebar-panel-links { display: flex; flex-direction: column; gap: .25rem; margin-top: .75rem; }
+      .sidebar-panel-links a { text-decoration: none; color: rgba(255,255,255,.78); padding: .5rem .55rem; border-radius: 12px; display: flex; gap: .6rem; align-items: center; font-weight: 750; }
+      .sidebar-panel-links a:hover { background: rgba(255,255,255,.06); color: var(--text); }
+      .sidebar-panel-links i { font-size: 1.15rem; width: 1.4rem; text-align: center; }
+
+      .sidebar-logout-btn {
+        cursor: pointer;
+        text-align: center;
+        font-weight: 800;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        padding: .58rem .72rem;
-        border-radius: 12px;
-        width: 100%;
-        transition: background .15s, color .15s, border-color .15s;
-      }
-      .theme-toggle-btn:hover { background: var(--brand-soft); color: var(--brand-strong); border-color: color-mix(in srgb, var(--brand) 44%, var(--line)); }
-      .theme-toggle-btn .theme-dot {
-        width: .56rem;
-        height: .56rem;
-        border-radius: 999px;
-        background: var(--brand);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 22%, transparent);
-        flex-shrink: 0;
+        justify-content: center;
       }
 
-      .main-content { margin-left: max(200px, calc(50vw - 270px)); flex: 1; min-height: 100vh; }
-      .container { max-width: 620px; padding: 1rem 0 2rem; }
+      .main-content { margin-left: 282px; flex: 1; min-height: 100vh; }
+      .container { max-width: 1200px; padding: 1.25rem 1.25rem 2.25rem; }
 
       /* Shared */
       .btn { display: inline-block; padding: .48rem 1rem; border: none; border-radius: 11px; font-size: .9rem; cursor: pointer; text-decoration: none; font-weight: 700; }
       .btn-primary { background: var(--brand); color: #fff; }
       .btn-primary:hover { background: var(--brand-strong); }
-      .btn-secondary { background: #f2ebe4; color: var(--text); }
-      .btn-secondary:hover { background: #eadfd5; }
-      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 12px 28px rgba(92, 62, 38, .08); }
+      .btn-secondary { background: rgba(255,255,255,.08); color: var(--text); border: 1px solid rgba(255,255,255,.10); }
+      .btn-secondary:hover { background: rgba(255,255,255,.12); }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 18px 44px rgba(0, 0, 0, .28); backdrop-filter: blur(12px); }
       h1, h2, h3 { color: var(--text); font-family: "Space Grotesk", "Manrope", sans-serif; letter-spacing: .1px; }
-      input, textarea, select { width: 100%; padding: .58rem .64rem; border: 1px solid #d6c8bb; border-radius: 10px; font-size: .98rem; margin-top: .25rem; background: var(--surface-soft); color: var(--text); }
-      input:focus, textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(239, 90, 60, .14); }
+      input, textarea, select { width: 100%; padding: .58rem .64rem; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; font-size: .98rem; margin-top: .25rem; background: rgba(0,0,0,.22); color: var(--text); }
+      input:focus, textarea:focus { outline: none; border-color: color-mix(in srgb, var(--brand) 55%, rgba(255,255,255,.12)); box-shadow: 0 0 0 3px rgba(183, 144, 147, .18); }
       label { font-weight: 600; display: block; margin-top: .75rem; }
       .form-help { font-size: .8rem; color: var(--muted); }
       .errorlist { color: #c00; list-style: none; font-size: .85rem; }
 
       @media (max-width: 920px) {
         body { display: block; }
-        .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid var(--line); align-items: stretch; padding: .8rem .75rem; box-shadow: none; }
-        .sidebar-nav { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: .4rem; }
-        .sidebar-bottom { display: none; }
+        .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); padding: .85rem .75rem; box-shadow: none; border-radius: 0; top: 0; left: 0; bottom: auto; }
+        .sidebar-panel { display: none; }
         .main-content { margin-left: 0; }
-        .container { max-width: 100%; padding: .7rem .6rem 1.5rem; }
+        .container { max-width: 100%; padding: .9rem .75rem 1.5rem; }
       }
     </style>
     {% block extra_css %}{% endblock %}
   </head>
   <body>
     <aside class="sidebar">
+      <a class="sidebar-brand" href="{% url 'feed' %}">Faves</a>
       <ul class="sidebar-nav">
-        <li><a href="{% url 'feed' %}" class="nav-brand"><i class="ci-House_01"></i> Faves</a></li>
+        <li><a href="{% url 'feed' %}"><i class="ci-House_01"></i> Home</a></li>
         <li><a href="{% url 'feed' %}"><i class="ci-Compass"></i> Explore</a></li>
         <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i> For You</a></li>
         {% if user.is_authenticated %}
-        <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i> New Post</a></li>
         <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i> Profile</a></li>
+        <li><span><i class="ci-Chat"></i> Messages</span></li>
+        <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i> Create</a></li>
+        {% else %}
+        <li><a href="{% url 'login' %}"><i class="ci-Lock_Open"></i> Login</a></li>
+        <li><a href="{% url 'register' %}"><i class="ci-User_Add"></i> Register</a></li>
         {% endif %}
       </ul>
-      <div class="sidebar-bottom">
-        {% if user.is_authenticated %}
-          <a href="{% url 'profile' user.username %}" class="sidebar-user">
-            {% if user.profile.avatar %}
-              <img src="{{ user.profile.avatar.url }}" alt="">
-            {% else %}
-              <div class="avatar-sm-placeholder">{{ user.username|first|upper }}</div>
-            {% endif %}
-            <span>{{ user.username }}</span>
-          </a>
-          <form method="post" action="{% url 'logout' %}">
+
+      {% if user.is_authenticated %}
+      <div class="sidebar-you">
+        <div class="sidebar-divider" aria-hidden="true"></div>
+        <div class="sidebar-you-title">You</div>
+        <div class="sidebar-divider tight" aria-hidden="true"></div>
+        <select class="sidebar-field" aria-label="My location" disabled>
+          <option selected>My Location</option>
+        </select>
+        <div class="sidebar-row" aria-hidden="true">
+          <div class="sidebar-pill">Cravings</div>
+          <div class="sidebar-pill">Surprise Me</div>
+        </div>
+        <input class="sidebar-field" style="margin-top:.65rem;" placeholder="Search..." disabled />
+        <div class="sidebar-panel-links">
+          <a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i> Your Profile</a>
+          <a href="{% url 'profile' user.username %}#liked"><i class="ci-Heart_01"></i> Liked Posts</a>
+          <form method="post" action="{% url 'logout' %}" style="margin-top:.25rem;">
             {% csrf_token %}
-            <button type="submit"><i class="ci-Log_Out"></i> Logout</button>
+            <button type="submit" class="sidebar-field sidebar-logout-btn">Logout</button>
           </form>
-        {% else %}
-          <a href="{% url 'login' %}"><i class="ci-Lock_Open"></i> Login</a>
-          <a href="{% url 'register' %}"><i class="ci-User_Add"></i> Register</a>
-        {% endif %}
+          <div class="sidebar-divider tight" aria-hidden="true"></div>
+        </div>
       </div>
+      {% endif %}
     </aside>
 
     <div class="main-content">
@@ -216,36 +228,12 @@
           }
         }
 
-        function updateThemeButton(theme) {
-          const button = document.getElementById('themeToggle');
-          const label = document.getElementById('themeToggleLabel');
-          if (!button || !label) {
-            return;
-          }
-
-          const isNight = theme === 'night';
-          button.setAttribute('aria-pressed', isNight ? 'true' : 'false');
-          label.textContent = isNight ? 'Switch to Warm' : 'Switch to Night';
-        }
-
         function applyTheme(theme) {
-          const resolvedTheme = theme === 'night' ? 'night' : 'warm';
-          document.body.setAttribute('data-theme', resolvedTheme);
-          setStoredTheme(resolvedTheme);
-          updateThemeButton(resolvedTheme);
+          document.body.setAttribute('data-theme', 'night');
+          setStoredTheme('night');
         }
 
-        const preferredTheme = getStoredTheme();
-        if (preferredTheme === 'night' || preferredTheme === 'warm') {
-          applyTheme(preferredTheme);
-        } else {
-          applyTheme('warm');
-        }
-
-        document.getElementById('themeToggle')?.addEventListener('click', () => {
-          const currentTheme = document.body.getAttribute('data-theme') === 'night' ? 'night' : 'warm';
-          applyTheme(currentTheme === 'night' ? 'warm' : 'night');
-        });
+        applyTheme('night');
 
         function parseActionType(action) {
           if (!action) {

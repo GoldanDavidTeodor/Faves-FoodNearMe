@@ -313,6 +313,8 @@ def profile(request, username):
     _attach_comment_threads(user_posts)
     _attach_comment_threads(liked_posts)
 
+    received_likes_count = Like.objects.filter(post__user=profile_user).count()
+
     return render(request, "posts/profile.html", {
         "profile_user": profile_user,
         "user_posts": user_posts,
@@ -320,6 +322,7 @@ def profile(request, username):
         "is_following": is_following,
         "followers_count": profile_user.followers.count(),
         "following_count": profile_user.following.count(),
+        "received_likes_count": received_likes_count,
         "liked_ids": liked_ids,
     })
 

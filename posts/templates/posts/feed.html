@@ -10,11 +10,11 @@
     display: flex;
     gap: 0;
     margin: 0;
-    background: #fffdf9;
+    background: rgba(22, 21, 20, .92);
     border-radius: 0;
     overflow: hidden;
     width: 100%;
-    border: 1px solid #eadfd5;
+    border: 1px solid rgba(255,255,255,.10);
     border-bottom: none;
     box-shadow: none;
   }
@@ -23,7 +23,7 @@
     padding: 0.7rem 0;
     font-size: 1rem;
     font-weight: 700;
-    color: #a97c50;
+    color: rgba(255,255,255,.62);
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
@@ -34,38 +34,38 @@
     letter-spacing: 0.01em;
   }
   .tab-btn.active {
-    color: #e85d04;
-    border-bottom: 3px solid #e85d04;
+    color: rgba(255,255,255,.92);
+    border-bottom: 3px solid rgba(255,255,255,.92);
     background: none;
     z-index: 1;
     box-shadow: none;
   }
   .tab-btn:not(.active):hover {
-    background: #fff2e0;
-    color: #e85d04;
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.92);
   }
   .post-tab-content { padding: 0; }
   .post-location-placeholder {
     min-height: 480px;
-    background: #fff7ee;
+    background: rgba(0,0,0,.22);
     border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #b08a5a;
+    color: rgba(255,255,255,.62);
     font-size: 1.05rem;
     font-style: italic;
-    border: 1px dashed #eadfd5;
+    border: 1px dashed rgba(255,255,255,.12);
     margin: 0 1rem 1rem 1rem;
   }
   .post-card {
-    background: #fffdf9;
+    background: rgba(22, 21, 20, .92);
     border-radius: 16px;
     margin: 0 0 1.1rem;
-    box-shadow: 0 14px 32px rgba(92, 62, 38, .11);
+    box-shadow: 0 18px 60px rgba(0,0,0,.45);
     overflow: hidden;
     max-width: 620px;
-    border: 1px solid #eadfd5;
+    border: 1px solid rgba(255,255,255,.10);
     animation: postReveal .34s ease both;
   }
   .post-card:first-child { margin-top: .2rem; }
@@ -77,50 +77,50 @@
   .post-header-left { display: flex; align-items: center; gap: .6rem; }
   .post-user-meta { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
   .post-header-left .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
-  .post-header-left .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 700; flex-shrink: 0; }
-  .post-header a { font-weight: 700; color: #222; text-decoration: none; font-size: .95rem; }
+  .post-header-left .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.10); color: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 800; flex-shrink: 0; }
+  .post-header a { font-weight: 750; color: rgba(255,255,255,.92); text-decoration: none; font-size: .95rem; }
   .post-header a:hover { text-decoration: underline; }
-  .post-header .post-date { font-size: .75rem; color: #999; margin-top: .15rem; }
+  .post-header .post-date { font-size: .75rem; color: rgba(255,255,255,.55); margin-top: .15rem; }
   .post-menu-btn { background: none; border: none; color: #8e8e8e; cursor: pointer; padding: .2rem; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
-  .post-menu-btn:hover { color: #e85d04; }
+  .post-menu-btn:hover { color: rgba(255,255,255,.92); }
   .post-menu-dots { width: 4px; height: 4px; border-radius: 50%; background: currentColor; box-shadow: -6px 0 0 currentColor, 6px 0 0 currentColor; display: inline-block; }
-  .post-images { position: relative; width: 100%; background: #fff7ee; }
+  .post-images { position: relative; width: 100%; background: #000; }
   .post-images img { width: 100%; display: none; object-fit: cover; max-height: 580px; }
   .post-images img.active { display: block; }
 
   .carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 2; }
   .carousel-dots .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.5); border: none; padding: 0; cursor: pointer; transition: background .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-  .carousel-dots .dot.active { background: #fff; }
+  .carousel-dots .dot.active { background: rgba(255,255,255,.92); }
 
   .post-footer { padding: .85rem 1.05rem .95rem; }
   .post-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
   .action-group { display: flex; align-items: center; gap: .35rem; min-width: 48px; }
-  .action-group .count { font-size: .82rem; font-weight: 600; color: #555; }
+  .action-group .count { font-size: .82rem; font-weight: 700; color: rgba(255,255,255,.62); }
   .post-actions .action-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: flex; align-items: center; }
-  .post-actions .action-btn i { font-size: 1.45rem; color: #8e8e8e; transition: color .15s; }
-  .post-actions .action-btn:hover i { color: #e85d04; }
+  .post-actions .action-btn i { font-size: 1.45rem; color: rgba(255,255,255,.62); transition: color .15s; }
+  .post-actions .action-btn:hover i { color: rgba(255,255,255,.92); }
   .post-actions .action-btn.liked i { color: #e53935; }
   .post-actions .action-btn.liked:hover i { color: #c62828; }
   .post-actions .action-btn.rated i { color: #c87900; }
   .post-actions .action-btn.rated:hover i { color: #a86100; }
-  .action-group .count.rating-count { color: #7a5a15; }
+  .action-group .count.rating-count { color: rgba(255,255,255,.62); }
 
-  .post-title-line { font-size: 1rem; font-weight: 700; color: #222; margin-bottom: .2rem; }
-  .post-desc { font-size: .9rem; color: #555; margin-bottom: .25rem; line-height: 1.45; }
-  .post-meta { font-size: .8rem; color: #999; display: flex; align-items: center; gap: .3rem; }
+  .post-title-line { font-size: 1rem; font-weight: 850; color: rgba(255,255,255,.92); margin-bottom: .2rem; }
+  .post-desc { font-size: .9rem; color: rgba(255,255,255,.62); margin-bottom: .25rem; line-height: 1.45; }
+  .post-meta { font-size: .8rem; color: rgba(255,255,255,.55); display: flex; align-items: center; gap: .3rem; }
   .post-meta i { font-size: .95rem; }
 
-  .rating-modal-backdrop { position: fixed; inset: 0; background: rgba(17, 17, 17, .45); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
+  .rating-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
   .rating-modal-backdrop.active { display: flex; }
-  .rating-modal { width: 100%; max-width: 360px; background: #fff; border-radius: 14px; box-shadow: 0 18px 40px rgba(0,0,0,.24); padding: 1rem; }
+  .rating-modal { width: 100%; max-width: 380px; background: rgba(18, 20, 28, .92); border-radius: 18px; box-shadow: 0 26px 72px rgba(0,0,0,.6); padding: 1rem; border: 1px solid rgba(255,255,255,.12); }
   .rating-modal h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
-  .rating-modal p { margin: 0 0 .8rem; color: #666; font-size: .9rem; }
+  .rating-modal p { margin: 0 0 .8rem; color: rgba(255,255,255,.62); font-size: .9rem; font-weight: 650; }
   .rating-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .45rem; }
-  .rating-choice { border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #444; padding: .5rem 0; font-weight: 700; cursor: pointer; }
-  .rating-choice:hover { border-color: #c87900; color: #c87900; }
-  .rating-choice.active { border-color: #c87900; background: #fff5e3; color: #8a5a00; }
+  .rating-choice { border: 1px solid rgba(255,255,255,.14); border-radius: 12px; background: rgba(255,255,255,.06); color: rgba(255,255,255,.88); padding: .55rem 0; font-weight: 900; cursor: pointer; }
+  .rating-choice:hover { border-color: rgba(255,255,255,.32); color: rgba(255,255,255,.95); }
+  .rating-choice.active { border-color: rgba(255,255,255,.38); background: rgba(255,255,255,.12); }
   .rating-modal-actions { margin-top: .85rem; display: flex; justify-content: flex-end; }
-  .rating-cancel { border: 1px solid #ddd; background: #fff; color: #555; border-radius: 9px; padding: .4rem .75rem; cursor: pointer; }
+  .rating-cancel { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.88); border-radius: 12px; padding: .45rem .85rem; cursor: pointer; font-weight: 900; }
 
   .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
   .comment-modal-backdrop.active { display: flex; }
@@ -131,7 +131,7 @@
   .comment-modal { 
     width: min(980px, 100%); 
     height: min(700px, 92vh); 
-    background: #fff; 
+    background: rgba(18, 20, 28, .92); 
     border-radius: 16px; 
     overflow: hidden; 
     display: grid; 
@@ -179,7 +179,7 @@
   .modal-tabs .tab-btn.active {
     background: transparent;
     color: #fff;
-    border-bottom: 3px solid #e85d04; 
+    border-bottom: 3px solid var(--brand); 
   }
 
   #modal-location {
@@ -195,7 +195,7 @@
   .comment-image-nav[disabled] { opacity: .45; cursor: default; }
   .comment-image-dots { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 5; }
   .comment-image-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: rgba(255,255,255,.45); cursor: pointer; padding: 0; }
-  .comment-image-dot.active { background: #fff; }
+  .comment-image-dot.active { background: rgba(255,255,255,.92); }
 
   .comment-modal-right { 
     display: flex; 
@@ -203,7 +203,7 @@
     min-width: 0; 
     min-height: 0; 
     height: 100%; 
-    background: #fff;
+    background: transparent;
     border-left: none; 
   }
   .comment-modal-top { 
@@ -211,10 +211,10 @@
     align-items: center; 
     justify-content: space-between; 
     padding: 0 1.2rem;
-    border-bottom: 1px solid #eaeaea; 
+    border-bottom: 1px solid rgba(255,255,255,.10); 
   }
-  .comment-modal-top h3 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #222; }
-  .comment-modal-close { background: none; border: none; font-size: 1.35rem; color: #666; cursor: pointer; line-height: 1; }
+  .comment-modal-top h3 { margin: 0; font-size: 1.05rem; font-weight: 800; color: rgba(255,255,255,.92); }
+  .comment-modal-close { background: none; border: none; font-size: 1.35rem; color: rgba(255,255,255,.62); cursor: pointer; line-height: 1; }
   
   .comment-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: .75rem .9rem; }
   .comment-list, .inline-comments-list { scrollbar-width: thin; scrollbar-color: #f252ca transparent; }
@@ -225,77 +225,229 @@
   
   .comment-item { display: flex; align-items: flex-start; gap: .55rem; margin-bottom: .7rem; }
   .comment-avatar, .comment-avatar-placeholder { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
-  .comment-avatar-placeholder { background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; }
+  .comment-avatar-placeholder { background: rgba(255,255,255,.10); color: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 900; }
   .comment-body { min-width: 0; flex: 1; }
-  .comment-text { margin: 0; font-size: .88rem; color: #333; line-height: 1.35; word-break: break-word; }
+  .comment-text { margin: 0; font-size: .88rem; color: rgba(255,255,255,.88); line-height: 1.35; word-break: break-word; }
   .comment-text strong { margin-right: .3rem; }
-  .comment-replies { display: none; margin-left: 2rem; margin-top: .3rem; border-left: 2px solid #f0f0f0; padding-left: .55rem; }
+  .comment-replies { display: none; margin-left: 2rem; margin-top: .3rem; border-left: 2px solid rgba(255,255,255,.10); padding-left: .55rem; }
   .comment-replies.active { display: block; }
-  .replies-toggle { border: none; background: none; color: #a04a87; font-size: .75rem; font-weight: 700; padding: 0; margin-top: .25rem; cursor: pointer; }
-  .replies-toggle:hover { color: #f252ca; }
-  .reply-btn { border: none; background: none; color: #8c8c8c; font-size: .75rem; font-weight: 600; padding: 0; margin-top: .2rem; cursor: pointer; }
-  .reply-btn:hover { color: #f252ca; }
-  .comment-date { display: block; font-size: .74rem; color: #999; margin-top: .15rem; }
+  .replies-toggle { border: none; background: none; color: rgba(255,255,255,.62); font-size: .75rem; font-weight: 800; padding: 0; margin-top: .25rem; cursor: pointer; }
+  .replies-toggle:hover { color: rgba(255,255,255,.92); }
+  .reply-btn { border: none; background: none; color: rgba(255,255,255,.62); font-size: .75rem; font-weight: 750; padding: 0; margin-top: .2rem; cursor: pointer; }
+  .reply-btn:hover { color: rgba(255,255,255,.92); }
+  .comment-date { display: block; font-size: .74rem; color: rgba(255,255,255,.55); margin-top: .15rem; }
   .comment-meta-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .55rem; margin-top: .15rem; }
   .comment-like-controls { display: inline-flex; align-items: center; gap: .25rem; }
   .comment-like-form { display: inline-flex; margin: 0; }
-  .comment-like-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: inline-flex; align-items: center; color: #999; }
+  .comment-like-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: inline-flex; align-items: center; color: rgba(255,255,255,.55); }
   .comment-like-btn i { font-size: .9rem; }
-  .comment-like-btn:hover { color: #e85d04; }
+  .comment-like-btn:hover { color: rgba(255,255,255,.92); }
   .comment-like-btn.liked { color: #e53935; }
-  .comment-like-count { font-size: .74rem; color: #888; }
-  .comment-empty { color: #888; font-size: .9rem; }
+  .comment-like-count { font-size: .74rem; color: rgba(255,255,255,.55); font-weight: 800; }
+  .comment-empty { color: rgba(255,255,255,.62); font-size: .9rem; }
   
-  .comment-form { border-top: 1px solid #eee; padding: .65rem .85rem; }
-  .comment-modal-right .comment-form { flex-shrink: 0; padding: 1rem 1.2rem; background: #fafafa; border-top: 1px solid #eaeaea; }
+  .comment-form { border-top: 1px solid rgba(255,255,255,.10); padding: .65rem .85rem; }
+  .comment-modal-right .comment-form { flex-shrink: 0; padding: 1rem 1.2rem; background: rgba(0,0,0,.16); border-top: 1px solid rgba(255,255,255,.10); }
   
   .comment-input-row { 
-    display: flex; align-items: center; gap: .35rem; border: 1px solid #ddd; 
+    display: flex; align-items: center; gap: .35rem; border: 1px solid rgba(255,255,255,.12); 
     border-radius: 999px; padding: .16rem .35rem .16rem .7rem; 
     transition: border-color 0.2s, box-shadow 0.2s; 
-    background: #fff;
+    background: rgba(0,0,0,.22);
   }
   .comment-input-row:focus-within {
-    border-color: #e85d04;
-    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.15);
+    border-color: rgba(255,255,255,.30);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
   }
   .comment-form textarea { 
     flex: 1; resize: none; min-height: 22px; max-height: 90px; border: none; 
-    outline: none; box-shadow: none; -webkit-appearance: none; background: transparent; 
+    outline: none; box-shadow: none; appearance: none; -webkit-appearance: none; background: transparent; 
     font: inherit; font-size: .88rem; line-height: 22px; overflow-y: auto; padding: 7px 0 0 0; 
+    color: rgba(255,255,255,.90);
   }
 
-  .comment-send { border: none; background: none; color: #8e8e8e; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: .25rem; margin-left: -2px; }
-  .comment-send:hover { color: #f252ca; }
+  .comment-send { border: none; background: none; color: rgba(255,255,255,.62); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: .25rem; margin-left: -2px; }
+  .comment-send:hover { color: rgba(255,255,255,.92); }
   .comment-send i { font-size: 1.15rem; }
-  .replying-hint { font-size: .75rem; color: #7a7a7a; margin-bottom: .35rem; display: none; align-items: center; justify-content: space-between; }
+  .replying-hint { font-size: .75rem; color: rgba(255,255,255,.62); margin-bottom: .35rem; display: none; align-items: center; justify-content: space-between; }
   .replying-hint.active { display: flex; }
-  .replying-hint button { border: none; background: none; color: #999; cursor: pointer; font-size: .85rem; }
-  .inline-comments { display: none; margin-top: .55rem; border-top: 1px solid #eee; padding-top: .55rem; }
+  .replying-hint button { border: none; background: none; color: rgba(255,255,255,.62); cursor: pointer; font-size: .85rem; }
+  .inline-comments { display: none; margin-top: .55rem; border-top: 1px solid rgba(255,255,255,.10); padding-top: .55rem; }
   .inline-comments.active { display: block; }
   .inline-comments-list { max-height: 320px; overflow-y: auto; padding-right: .2rem; }
 
   @media (max-width: 880px) {
     .comment-modal { grid-template-columns: 1fr; height: min(760px, 94vh); }
     .comment-modal-left { max-height: 45vh; }
-    .comment-modal-right { border-left: none; border-top: 1px solid #eee; }
+    .comment-modal-right { border-left: none; border-top: 1px solid rgba(255,255,255,.10); }
   }
 
   /* Night Mode */
-  body[data-theme="night"] .post-card { background: #18202b; border-color: #2a3445; box-shadow: 0 16px 34px rgba(0, 0, 0, .32); }
-  body[data-theme="night"] .post-images { background: #111722; }
+  body[data-theme="night"] .post-card { background: var(--surface-strong); border-color: rgba(255,255,255,.10); box-shadow: 0 16px 34px rgba(0, 0, 0, .32); }
+  body[data-theme="night"] .post-images { background: rgba(0,0,0,.22); }
   body[data-theme="night"] .post-header a,
   body[data-theme="night"] .post-title-line,
   body[data-theme="night"] .comment-text,
   body[data-theme="night"] .comment-modal-top h3 { color: #eef3ff; }
-  body[data-theme="night"] .post-tabs { background: #111722; border-color: #2a3445; }
+  body[data-theme="night"] .post-tabs { background: rgba(0,0,0,.22); border-color: rgba(255,255,255,.10); }
   body[data-theme="night"] .tab-btn { color: #9cabc2; }
-  body[data-theme="night"] .tab-btn.active { color: #ff8f57; border-color: #ff8f57; }
-  body[data-theme="night"] .comment-modal { background: #18202b; }
-  body[data-theme="night"] .comment-modal-right { background: #18202b; border-color: #2d394c; }
-  body[data-theme="night"] .comment-modal-top, body[data-theme="night"] .comment-form { border-color: #2d394c; }
-  body[data-theme="night"] .comment-modal-right .comment-form { background: #111722; border-top: 1px solid #2d394c; }
-  body[data-theme="night"] .comment-input-row { background: #18202b; border-color: #3e4c63; }
+  body[data-theme="night"] .tab-btn.active { color: var(--brand); border-color: var(--brand); }
+  body[data-theme="night"] .comment-modal { background: var(--surface-strong); }
+  body[data-theme="night"] .comment-modal-right { background: var(--surface-strong); border-color: rgba(255,255,255,.10); }
+  body[data-theme="night"] .comment-modal-top, body[data-theme="night"] .comment-form { border-color: rgba(255,255,255,.10); }
+  body[data-theme="night"] .comment-modal-right .comment-form { background: rgba(0,0,0,.16); border-top: 1px solid rgba(255,255,255,.10); }
+  body[data-theme="night"] .comment-input-row { background: rgba(0,0,0,.22); border-color: rgba(255,255,255,.14); }
+
+  /* =====================================================
+     Profile-style comment modal (shared with profile page)
+     ===================================================== */
+  .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
+  .comment-modal-backdrop.active { display: flex; }
+  .comment-modal {
+    width: min(1320px, 100%);
+    height: min(760px, 92vh);
+    border-radius: 22px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    background: #161514;
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 32px 88px rgba(0,0,0,.55);
+  }
+  .comment-modal-left { background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; min-height: 0; }
+  .modal-tab-panel { flex: 1; min-height: 0; }
+  .modal-images-grid {
+    height: 100%;
+    overflow: auto;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .modal-images-grid::-webkit-scrollbar { width: 10px; }
+  .modal-images-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 999px; }
+  .modal-image-tile { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.22); aspect-ratio: 1 / 1; }
+  .modal-image-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .comment-modal-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .modal-right-top {
+    padding: 1.05rem 1.15rem .85rem;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+  }
+  .modal-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .modal-user { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+  .modal-user .avatar, .modal-user .avatar-placeholder { width: 48px; height: 48px; border-radius: 999px; }
+  .modal-user .avatar { object-fit: cover; display: block; }
+  .modal-user .avatar-placeholder {
+    background: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .modal-user-name { font-weight: 850; color: rgba(255,255,255,.86); font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal-menu { width: 40px; height: 40px; border-radius: 999px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.10); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .modal-menu-lines { width: 16px; height: 12px; position: relative; }
+  .modal-menu-lines span { position: absolute; left: 0; right: 0; height: 2px; border-radius: 999px; background: rgba(255,255,255,.70); }
+  .modal-menu-lines span:nth-child(1) { top: 0; }
+  .modal-menu-lines span:nth-child(2) { top: 5px; }
+  .modal-menu-lines span:nth-child(3) { top: 10px; }
+  .modal-post-title { font-size: 2.2rem; line-height: 1.05; margin-top: .45rem; color: rgba(255,255,255,.92); }
+  .modal-post-desc { margin-top: .35rem; color: rgba(238,241,248,.62); font-weight: 650; }
+  .modal-post-date { margin-top: .5rem; color: rgba(238,241,248,.5); font-size: .85rem; font-weight: 750; }
+
+  .modal-tabs {
+    height: auto;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: .8rem;
+    display: flex;
+    gap: .65rem;
+  }
+  .modal-tab-btn {
+    border-radius: 999px;
+    padding: .55rem .95rem;
+    font-weight: 900;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.88);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .modal-tab-btn:focus { outline: none; }
+  .modal-tab-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(183, 144, 147, .22);
+  }
+  .modal-tab-btn.active { background: rgba(0,0,0,.32); }
+
+  .comment-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: .9rem 1.15rem; }
+  /* Custom scrollbar inside the modal (match profile panels) */
+  .comment-list,
+  .comment-modal-left {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(183, 144, 147, .62) transparent;
+  }
+  .comment-list::-webkit-scrollbar,
+  .comment-modal-left::-webkit-scrollbar { width: 8px; }
+  .comment-list::-webkit-scrollbar-track,
+  .comment-modal-left::-webkit-scrollbar-track { background: transparent; }
+  .comment-list::-webkit-scrollbar-thumb,
+  .comment-modal-left::-webkit-scrollbar-thumb {
+    background: rgba(183, 144, 147, .52);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .comment-list::-webkit-scrollbar-thumb:hover,
+  .comment-modal-left::-webkit-scrollbar-thumb:hover { background: rgba(183, 144, 147, .68); }
+
+  .comment-form { border-top: 1px solid rgba(255,255,255,.10); padding: .85rem 1.15rem; background: rgba(0,0,0,.16); }
+  .comment-input-row { display: flex; align-items: center; gap: .5rem; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: .2rem .5rem .2rem .8rem; background: rgba(0,0,0,.22); }
+  .comment-input-row:focus-within {
+    border-color: color-mix(in srgb, var(--brand) 55%, rgba(255,255,255,.12));
+    box-shadow: 0 0 0 3px rgba(183, 144, 147, .18);
+  }
+  .comment-form textarea:focus,
+  .comment-form textarea:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  /* Neutralize old feed-only sizing rules */
+  #modal-location { height: 100% !important; }
+
+  /* Page-level scrollbar (feed/home) — match profile custom scrollbar */
+  html,
+  body {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(183, 144, 147, .62) transparent;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar { width: 10px; }
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track { background: transparent; }
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    background: rgba(183, 144, 147, .52);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  html::-webkit-scrollbar-thumb:hover,
+  body::-webkit-scrollbar-thumb:hover { background: rgba(183, 144, 147, .68); }
+  .comment-login-note { border-top: 1px solid rgba(255,255,255,.10); padding: 1rem 1.15rem; color: rgba(238,241,248,.62); font-weight: 750; }
+
+  @media (max-width: 980px) {
+    .comment-modal { grid-template-columns: 1fr; height: min(860px, 94vh); }
+    .comment-modal-left { max-height: 44vh; }
+  }
 </style>
 {% endblock %}
 
@@ -479,13 +631,9 @@
       <div class="comment-modal-data" style="display:none;" 
            data-lat="{{ post.lat }}" data-lng="{{ post.lng }}" data-post-id="{{ post.id }}">
         <div data-modal-images>
-          <div class="comment-modal-images">
-            {% for img in post.images.all %}
-              <img src="{{ img.image.url }}" alt="{{ post.title }}">
-            {% empty %}
-              <div class="comment-modal-no-image">No images for this post.</div>
-            {% endfor %}
-          </div>
+          {% for img in post.images.all %}
+            <img src="{{ img.image.url }}" alt="{{ post.title }}">
+          {% endfor %}
         </div>
         <div data-modal-comments>
           {% for comment in post.top_level_comments %}
@@ -499,14 +647,37 @@
                 <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
                 <div class="comment-meta-row">
                   <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                  <div class="comment-like-controls">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'comment_like' comment.id %}" class="comment-like-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{% url 'feed' %}">
+                      <button type="submit" class="comment-like-btn {% if comment.current_user_liked %}liked{% endif %}" aria-label="Like comment"><i class="ci-Heart_01"></i></button>
+                    </form>
+                    {% else %}
+                      <span class="comment-like-btn"><i class="ci-Heart_01"></i></span>
+                    {% endif %}
+                    <span class="comment-like-count">{{ comment.likes_count|default_if_none:0 }}</span>
+                  </div>
                 </div>
+                {% if user.is_authenticated %}
+                  <button type="button" class="reply-btn" data-reply-parent="{{ comment.id }}" data-reply-username="{{ comment.user.username }}">Reply</button>
+                {% endif %}
                 {% if comment.thread_replies %}
                 <button type="button" class="replies-toggle" data-replies-toggle data-replies-count="{{ comment.thread_replies|length }}">View replies ({{ comment.thread_replies|length }})</button>
                 <div class="comment-replies">
                   {% for reply in comment.thread_replies %}
                     <div class="comment-item">
+                      {% if reply.user.profile.avatar %}
+                        <img src="{{ reply.user.profile.avatar.url }}" alt="" class="comment-avatar">
+                      {% else %}
+                        <div class="comment-avatar-placeholder">{{ reply.user.username|first|upper }}</div>
+                      {% endif %}
                       <div class="comment-body">
                         <p class="comment-text"><strong>{{ reply.user.username }}</strong>{{ reply.text }}</p>
+                        <div class="comment-meta-row">
+                          <span class="comment-date">{{ reply.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
                       </div>
                     </div>
                   {% endfor %}
@@ -541,24 +712,33 @@
 <div class="comment-modal-backdrop" id="commentModal" aria-hidden="true">
   <div class="comment-modal" role="dialog" aria-modal="true" aria-labelledby="comment-modal-title">
     <div class="comment-modal-left">
-      <div class="post-tabs modal-tabs">
-        <button class="tab-btn active" data-modal-tab="modal-images">Images</button>
-        <button class="tab-btn" data-modal-tab="modal-location">Location</button>
-      </div>
       <div id="modal-images" class="modal-tab-panel" style="display: block;">
-        <div class="comment-modal-images" id="commentModalImages"></div>
-        <button type="button" class="comment-image-nav prev" id="commentImagePrev" aria-label="Previous image">&#10094;</button>
-        <button type="button" class="comment-image-nav next" id="commentImageNext" aria-label="Next image">&#10095;</button>
-        <div class="comment-image-dots" id="commentImageDots"></div>
+        <div class="modal-images-grid" id="commentModalImages"></div>
       </div>
       <div id="modal-location" class="modal-tab-panel" style="display: none;">
         <div id="modal-map" style="width:100%; height:100%;"></div>
       </div>
     </div>
     <div class="comment-modal-right">
-      <div class="comment-modal-top">
-        <h3 id="comment-modal-title">Post</h3>
-        <button type="button" class="comment-modal-close" id="commentModalClose">&times;</button>
+      <div class="modal-right-top">
+        <div class="modal-top-row">
+          <div class="modal-user">
+            <div id="commentModalUserAvatar"></div>
+            <div class="modal-user-name" id="commentModalUserName">Post</div>
+          </div>
+          <button type="button" class="modal-menu" id="commentModalClose" aria-label="Close">
+            <div class="modal-menu-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+          </button>
+        </div>
+
+        <h3 class="modal-post-title" id="comment-modal-title">Post Title</h3>
+        <div class="modal-post-desc" id="commentModalDescription"></div>
+        <div class="modal-post-date" id="commentModalDate"></div>
+
+        <div class="modal-tabs">
+          <button type="button" class="modal-tab-btn active" data-modal-tab="modal-images">Images</button>
+          <button type="button" class="modal-tab-btn" data-modal-tab="modal-location">Location</button>
+        </div>
       </div>
       <div class="comment-list" id="commentModalList"></div>
       {% if user.is_authenticated %}
@@ -571,10 +751,12 @@
           <button type="button" data-reply-cancel>&times;</button>
         </div>
         <div class="comment-input-row">
-          <textarea name="text" id="commentModalText" placeholder="Add a comment..." required></textarea>
+          <textarea name="text" id="commentModalText" placeholder="Add a comment..." maxlength="1000" required></textarea>
           <button type="submit" class="comment-send"><i class="ci-Paper_Plane"></i></button>
         </div>
       </form>
+      {% else %}
+        <div class="comment-login-note">Log in to leave a comment.</div>
       {% endif %}
     </div>
   </div>
@@ -587,8 +769,6 @@
 const initializedMaps = {};
 let modalMap = null;
 let modalMarker = null;
-let commentModalImagesData = [];
-let commentModalImageIndex = 0;
 
 // --- REPLIES TOGGLE LOGIC (Event Delegation Corectat) ---
 document.addEventListener('click', function(e) {
@@ -705,73 +885,100 @@ document.querySelectorAll('.post-card').forEach(card => {
   });
 });
 
-// --- Modal Tab Logic ---
-document.querySelectorAll('[data-modal-tab]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const targetId = btn.dataset.modalTab;
-    document.querySelectorAll('[data-modal-tab]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.modal-tab-panel').forEach(p => p.style.display = 'none');
-    document.getElementById(targetId).style.display = 'block';
-    if (targetId === 'modal-location' && modalMap) {
-      setTimeout(() => modalMap.invalidateSize(), 50);
-    }
-  });
-});
-
-// --- Comment Modal Logic ---
+// --- Modal tabs + open/close (match profile page) ---
 const commentModal = document.getElementById('commentModal');
+const commentModalClose = document.getElementById('commentModalClose');
+const commentModalTitle = document.getElementById('comment-modal-title');
 const commentModalImages = document.getElementById('commentModalImages');
 const commentModalList = document.getElementById('commentModalList');
+const commentModalForm = document.getElementById('commentModalForm');
+const commentModalUserName = document.getElementById('commentModalUserName');
+const commentModalUserAvatar = document.getElementById('commentModalUserAvatar');
+const commentModalDescription = document.getElementById('commentModalDescription');
+const commentModalDate = document.getElementById('commentModalDate');
 
-function renderCommentModalImage() {
-  if (!commentModalImagesData.length) {
-    commentModalImages.innerHTML = '<div class="comment-modal-no-image">No images.</div>';
+function setActiveModalTab(targetId) {
+  document.querySelectorAll('[data-modal-tab]').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-modal-tab="${targetId}"]`)?.classList.add('active');
+  document.getElementById('modal-images').style.display = targetId === 'modal-images' ? 'block' : 'none';
+  document.getElementById('modal-location').style.display = targetId === 'modal-location' ? 'block' : 'none';
+  if (targetId === 'modal-location' && modalMap) {
+    setTimeout(() => modalMap.invalidateSize(), 60);
+  }
+}
+
+document.querySelectorAll('[data-modal-tab]').forEach(btn => {
+  btn.addEventListener('click', () => setActiveModalTab(btn.dataset.modalTab));
+});
+
+function renderModalImagesGrid(images) {
+  if (!images.length) {
+    commentModalImages.innerHTML = '<div class="mini-empty" style="grid-column:1/-1;">No images</div>';
     return;
   }
-  const current = commentModalImagesData[commentModalImageIndex];
-  commentModalImages.innerHTML = `<img src="${current.src}" alt="${current.alt}" class="comment-modal-image">`;
-  document.getElementById('commentImagePrev').disabled = commentModalImageIndex === 0;
-  document.getElementById('commentImageNext').disabled = commentModalImageIndex === commentModalImagesData.length - 1;
+  commentModalImages.innerHTML = images
+    .map(img => `<div class="modal-image-tile"><img src="${img.src}" alt="${img.alt}"></div>`)
+    .join('');
 }
 
 function openCommentModalFromCard(card) {
-  const username = card.querySelector('.post-header-left a')?.textContent?.trim();
-  const title = card.querySelector('.post-title-line')?.textContent?.trim();
+  const username = card.querySelector('.post-header-left a')?.textContent?.trim() || 'Post';
+  const title = card.querySelector('.post-title-line')?.textContent?.trim() || 'Post';
+  const desc = card.querySelector('.post-desc')?.textContent?.trim() || '';
+  const date = card.querySelector('.post-date')?.textContent?.trim() || '';
+  const avatarImg = card.querySelector('.post-header-left .avatar');
+  const avatarPlaceholder = card.querySelector('.post-header-left .avatar-placeholder');
   const modalData = card.querySelector('.comment-modal-data');
-  const lat = parseFloat(modalData.dataset.lat);
-  const lng = parseFloat(modalData.dataset.lng);
-  const postId = modalData.dataset.postId;
 
-  document.getElementById('comment-modal-title').textContent = `${username} - ${title}`;
-  commentModalList.innerHTML = modalData.querySelector('[data-modal-comments]').innerHTML;
+  if (commentModalTitle) commentModalTitle.textContent = title;
+  if (commentModalUserName) commentModalUserName.textContent = username;
+  if (commentModalDescription) commentModalDescription.textContent = desc;
+  if (commentModalDate) commentModalDate.textContent = date;
 
-  // Set URL pentru formularul din modal
-  const modalForm = document.getElementById('commentModalForm');
-  if (modalForm) {
-    modalForm.action = `/post/${postId}/comment/`; // Ajustează URL-ul conform rutei tale Django
+  if (commentModalUserAvatar) {
+    if (avatarImg?.getAttribute('src')) {
+      commentModalUserAvatar.innerHTML = `<img class="avatar" src="${avatarImg.getAttribute('src')}" alt="">`;
+    } else {
+      const initial = avatarPlaceholder?.textContent?.trim() || username.slice(0, 1).toUpperCase();
+      commentModalUserAvatar.innerHTML = `<div class="avatar-placeholder">${initial}</div>`;
+    }
   }
 
-  document.querySelector('[data-modal-tab="modal-images"]').click();
+  if (!modalData) {
+    commentModalList.innerHTML = '<p class="comment-empty">No comments yet.</p>';
+    renderModalImagesGrid([]);
+    return;
+  }
 
-  commentModalImagesData = Array.from(modalData.querySelectorAll('[data-modal-images] img')).map(img => ({
+  commentModalList.innerHTML = modalData.querySelector('[data-modal-comments]')?.innerHTML || '<p class="comment-empty">No comments yet.</p>';
+
+  const postId = modalData.dataset.postId;
+  if (commentModalForm && postId) {
+    commentModalForm.action = `/posts/${postId}/comment/`;
+  }
+
+  const images = Array.from(modalData.querySelectorAll('[data-modal-images] img')).map(img => ({
     src: img.getAttribute('src'),
-    alt: img.getAttribute('alt'),
+    alt: img.getAttribute('alt') || '',
   }));
-  commentModalImageIndex = 0;
-  renderCommentModalImage();
+  renderModalImagesGrid(images);
 
-  if (!isNaN(lat) && !isNaN(lng)) {
+  const lat = parseFloat(modalData.dataset.lat);
+  const lng = parseFloat(modalData.dataset.lng);
+  if (!Number.isNaN(lat) && !Number.isNaN(lng) && window.L) {
     if (!modalMap) {
       modalMap = L.map('modal-map').setView([lat, lng], 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(modalMap);
       modalMarker = L.marker([lat, lng]).addTo(modalMap);
     } else {
       modalMap.setView([lat, lng], 15);
-      modalMarker.setLatLng([lat, lng]);
+      modalMarker?.setLatLng([lat, lng]);
     }
   }
+
+  setActiveModalTab('modal-images');
   commentModal.classList.add('active');
+  commentModal.setAttribute('aria-hidden', 'false');
 }
 
 // Global Card Click
@@ -784,12 +991,23 @@ document.querySelectorAll('.post-card').forEach(card => {
   });
 });
 
-document.getElementById('commentModalClose').addEventListener('click', () => {
+function closeCommentModal() {
   commentModal.classList.remove('active');
+  commentModal.setAttribute('aria-hidden', 'true');
+}
+
+commentModalClose?.addEventListener('click', closeCommentModal);
+commentModal?.addEventListener('click', (e) => {
+  if (e.target === commentModal) {
+    closeCommentModal();
+  }
 });
 
-document.getElementById('commentImagePrev').addEventListener('click', () => { if(commentModalImageIndex > 0) { commentModalImageIndex--; renderCommentModalImage(); }});
-document.getElementById('commentImageNext').addEventListener('click', () => { if(commentModalImageIndex < commentModalImagesData.length-1) { commentModalImageIndex++; renderCommentModalImage(); }});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && commentModal.classList.contains('active')) {
+    closeCommentModal();
+  }
+});
 
 // --- Rating Modal Logic ---
 let activeRateForm = null;

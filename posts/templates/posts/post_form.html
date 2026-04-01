@@ -4,66 +4,139 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  /* Form Card Container */
+  /* Profile-like fixed card layout (no page scroll; internal scroll only if needed) */
+  .container { max-width: none; padding: 16px 16px 26px; }
+  html, body { height: 100%; overflow: hidden; }
+  .main-content { min-height: 100vh; overflow: hidden; }
+  .container { height: 100vh; overflow: hidden; }
+
   .post-form-card {
-    background: #fffdf9;
-    border-radius: 16px;
-    box-shadow: 0 14px 32px rgba(92, 62, 38, .11);
-    border: 1px solid #eadfd5;
-    padding: 1.5rem 2rem; /* Reduced vertical padding */
-    max-width: 680px; /* Made the container wider */
-    margin: 1.5rem auto; /* Tighter outer margin */
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 32px);
+    border-radius: 18px;
+    background: #161514;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 18px 70px rgba(0, 0, 0, .55);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .post-form-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 300px;
+    background: linear-gradient(180deg, #937578 0%, rgba(147, 117, 120, .42) 35%, rgba(22, 21, 20, 0) 100%);
+    pointer-events: none;
+  }
+  .post-form-card > * { position: relative; }
+
+  .post-form-header {
+    padding: 1.15rem 1.15rem .75rem;
+    display: flex;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .post-form-header-inner {
+    width: min(880px, 100%);
   }
   .post-form-card h2 {
-    margin-top: 0;
-    margin-bottom: 0.25rem;
-    color: #222;
-    font-size: 1.4rem;
+    margin: 0;
+    color: rgba(255,255,255,.92);
+    font-size: 1.55rem;
+    font-weight: 950;
+    letter-spacing: .2px;
   }
   .post-form-desc {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1rem; /* Tighter gap below description */
+    color: rgba(238,241,248,.62);
+    font-size: .92rem;
+    margin: .3rem 0 0;
+    font-weight: 700;
+  }
+
+  .post-form-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .post-form-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: .25rem 1.15rem 1rem;
+  }
+  .post-form-body-inner {
+    width: min(880px, 100%);
+    margin: 0 auto;
+  }
+  .post-form-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(183, 144, 147, .62) transparent;
+  }
+  .post-form-body::-webkit-scrollbar { width: 8px; }
+  .post-form-body::-webkit-scrollbar-track { background: transparent; }
+  .post-form-body::-webkit-scrollbar-thumb {
+    background: rgba(183, 144, 147, .52);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .post-form-body::-webkit-scrollbar-thumb:hover { background: rgba(183, 144, 147, .68); }
+
+  .post-form-footer {
+    flex: 0 0 auto;
+    border-top: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.16);
+    padding: .9rem 1.15rem;
+    display: flex;
+    justify-content: center;
+  }
+  .post-form-footer-inner {
+    width: min(880px, 100%);
   }
 
   /* Map Styling */
   #map {
-    height: 240px; /* More compact map */
+    height: 260px;
     width: 100%;
     border-radius: 12px;
-    margin-bottom: 1rem;
-    border: 1px solid #eadfd5;
+    margin-bottom: .85rem;
+    border: 1px solid rgba(255,255,255,.10);
     z-index: 1;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 18px 55px rgba(0,0,0,.38);
   }
 
   /* Input Group Styling */
   .form-group {
-    margin-bottom: 0.85rem; /* Tighter gaps between fields */
+    margin-bottom: .75rem;
   }
   .form-group label {
     display: block;
-    font-weight: 600;
-    color: #444;
+    font-weight: 800;
+    color: rgba(255,255,255,.72);
     margin-bottom: 0.3rem;
     font-size: 0.85rem;
   }
   .form-control {
     width: 100%;
     padding: 0.6rem 0.85rem; /* Tighter input padding */
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 8px;
     font-family: inherit;
     font-size: 0.95rem;
-    color: #333;
+    color: rgba(255,255,255,.90);
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    background: #fff;
+    background: rgba(0,0,0,.22);
     box-sizing: border-box;
   }
   .form-control:focus {
     outline: none;
-    border-color: #e85d04;
-    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.15);
+    border-color: color-mix(in srgb, var(--brand) 55%, rgba(255,255,255,.12));
+    box-shadow: 0 0 0 3px rgba(183, 144, 147, 0.18);
   }
   textarea.form-control {
     resize: vertical;
@@ -80,18 +153,18 @@
   /* Modern File Upload Zone */
   .file-upload-wrapper {
     position: relative;
-    border: 2px dashed #eadfd5;
+    border: 2px dashed rgba(255,255,255,.14);
     border-radius: 12px;
-    padding: 1.25rem 1rem; /* More compact upload box */
+    padding: 1rem .9rem;
     text-align: center;
-    background: #fff7ee;
+    background: rgba(0,0,0,.22);
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
-    margin-bottom: 1.25rem;
+    margin-bottom: .85rem;
   }
   .file-upload-wrapper:hover {
-    background: #fff2e0;
-    border-color: #e85d04;
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.22);
   }
   .file-upload-wrapper input[type="file"] {
     position: absolute;
@@ -107,25 +180,25 @@
   .file-upload-icon {
     width: 26px;
     height: 26px;
-    color: #a97c50;
+    color: rgba(255,255,255,.62);
     margin: 0 auto 0.4rem;
     display: block;
   }
   .file-upload-text {
     font-weight: 600;
-    color: #a97c50;
+    color: rgba(255,255,255,.80);
     font-size: 0.9rem;
     margin: 0;
   }
   .file-upload-hint {
     font-size: 0.75rem;
-    color: #b08a5a;
+    color: rgba(255,255,255,.55);
     margin-top: 0.2rem;
   }
 
   /* Primary Button */
   .btn-submit {
-    background: #e85d04;
+    background: #b79093;
     color: #fff;
     font-weight: 700;
     border: none;
@@ -137,7 +210,7 @@
     width: 100%;
   }
   .btn-submit:hover {
-    background: #d05303;
+    filter: brightness(1.05);
   }
   .btn-submit:active {
     transform: scale(0.98);
@@ -146,105 +219,92 @@
   /* Back link */
   .back-link {
     display: block;
-    margin-top: 1rem;
+    margin-top: .6rem;
     text-align: center;
     font-size: 0.85rem;
-    color: #888;
+    color: rgba(255,255,255,.62);
     text-decoration: none;
     font-weight: 600;
   }
   .back-link:hover {
-    color: #e85d04;
+    color: #b79093;
     text-decoration: underline;
   }
 
-  /* Night Mode Support */
-  body[data-theme="night"] .post-form-card {
-    background: #18202b;
-    border-color: #2a3445;
-    box-shadow: 0 16px 34px rgba(0, 0, 0, .32);
+
+  @media (max-width: 720px) {
+    .post-form-header { padding: 1rem .9rem .65rem; }
+    .post-form-body { padding: .2rem .9rem .9rem; }
+    .post-form-footer { padding: .8rem .9rem; }
+    #map { height: 220px; }
+    .coords-grid { grid-template-columns: 1fr; gap: .65rem; }
   }
-  body[data-theme="night"] .post-form-card h2 { color: #eef3ff; }
-  body[data-theme="night"] .post-form-desc { color: #9cabc2; }
-  body[data-theme="night"] #map { border-color: #2a3445; }
-  body[data-theme="night"] .form-group label { color: #b2bfd5; }
-  body[data-theme="night"] .form-control {
-    background: #111722;
-    border-color: #334055;
-    color: #eef3ff;
-  }
-  body[data-theme="night"] .form-control:focus {
-    border-color: #ff8f57;
-    box-shadow: 0 0 0 3px rgba(255, 143, 87, 0.15);
-  }
-  body[data-theme="night"] .file-upload-wrapper {
-    background: #111722;
-    border-color: #334055;
-  }
-  body[data-theme="night"] .file-upload-wrapper:hover {
-    background: #1a2432;
-    border-color: #ff8f57;
-  }
-  body[data-theme="night"] .file-upload-icon { color: #a4b0c6; }
-  body[data-theme="night"] .file-upload-text { color: #a4b0c6; }
-  body[data-theme="night"] .file-upload-hint { color: #7a869a; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="post-form-card">
-  <h2>New Post</h2>
-  <p class="post-form-desc">
-    Click the map or enter coordinates to set a location.
-  </p>
+<section class="post-form-card" aria-label="New post">
+  <div class="post-form-header">
+    <div class="post-form-header-inner">
+      <h2>New Post</h2>
+      <p class="post-form-desc">Click the map or enter coordinates to set a location.</p>
+    </div>
+  </div>
 
-  <div id="map"></div>
-
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" class="post-form-layout">
     {% csrf_token %}
-    
-    {% for field in form %}
-      {% if field.name != 'lat' and field.name != 'lng' %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}<small style="color:#888; font-size:0.8rem;">{{ field.help_text }}</small>{% endif %}
-          {% for error in field.errors %}
-            <div style="color:#e53935; font-size:0.85rem; margin-top:0.25rem;">{{ error }}</div>
-          {% endfor %}
+
+    <div class="post-form-body">
+      <div class="post-form-body-inner">
+        <div id="map"></div>
+
+        {% for field in form %}
+          {% if field.name != 'lat' and field.name != 'lng' %}
+            <div class="form-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<small style="color:rgba(238,241,248,.56); font-size:0.8rem; font-weight:650;">{{ field.help_text }}</small>{% endif %}
+              {% for error in field.errors %}
+                <div style="color:#e53935; font-size:0.85rem; margin-top:0.25rem;">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <div class="coords-grid">
+          <div class="form-group">
+            <label for="{{ form.lat.id_for_label }}">Latitude</label>
+            {{ form.lat }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.lng.id_for_label }}">Longitude</label>
+            {{ form.lng }}
+          </div>
         </div>
-      {% endif %}
-    {% endfor %}
 
-    <div class="coords-grid">
-      <div class="form-group">
-        <label for="{{ form.lat.id_for_label }}">Latitude</label>
-        {{ form.lat }}
-      </div>
-      <div class="form-group">
-        <label for="{{ form.lng.id_for_label }}">Longitude</label>
-        {{ form.lng }}
-      </div>
-    </div>
-    
-    <div class="file-upload-wrapper">
-      <input type="file" name="images" id="id_images" multiple accept="image/*" onchange="updateFileName(this)">
-      <div class="file-upload-content">
-        <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-        <p class="file-upload-text" id="file-upload-text">Click or drag photos here</p>
-        <p class="file-upload-hint">You can select multiple images</p>
+        <div class="file-upload-wrapper">
+          <input type="file" name="images" id="id_images" multiple accept="image/*" onchange="updateFileName(this)">
+          <div class="file-upload-content">
+            <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p class="file-upload-text" id="file-upload-text">Click or drag photos here</p>
+            <p class="file-upload-hint">You can select multiple images</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button type="submit" class="btn-submit">Publish Post</button>
+    <div class="post-form-footer">
+      <div class="post-form-footer-inner">
+        <button type="submit" class="btn-submit">Publish Post</button>
+        <a href="{% url 'feed' %}" class="back-link">Cancel & return to feed</a>
+      </div>
+    </div>
   </form>
-
-  <a href="{% url 'feed' %}" class="back-link">Cancel & return to feed</a>
-</div>
+</section>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -262,10 +322,10 @@ function updateFileName(input) {
   const textElement = document.getElementById('file-upload-text');
   if (input.files && input.files.length > 1) {
     textElement.textContent = `${input.files.length} photos selected`;
-    textElement.style.color = '#e85d04';
+    textElement.style.color = '#b79093';
   } else if (input.files && input.files.length === 1) {
     textElement.textContent = input.files[0].name;
-    textElement.style.color = '#e85d04';
+    textElement.style.color = '#b79093';
   } else {
     textElement.textContent = 'Click or drag photos here';
     textElement.style.color = '';
@@ -275,6 +335,9 @@ function updateFileName(input) {
 // --- Map Logic ---
 document.addEventListener("DOMContentLoaded", function() {
   const map = L.map('map').setView([47.1585, 27.6014], 13);
+
+  // Ensure correct sizing inside the fixed-height flex card
+  setTimeout(() => map.invalidateSize(), 60);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,

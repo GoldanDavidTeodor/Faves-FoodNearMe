@@ -3,23 +3,17 @@
 
 {% block extra_css %}
 <style>
-  .edit-profile-card { max-width: 480px; margin: 1.5rem auto; background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .edit-profile-card { max-width: 480px; margin: 1.5rem auto; background: rgba(22, 21, 20, .92); border-radius: 18px; padding: 2rem; box-shadow: 0 22px 85px rgba(0,0,0,.58); border: 1px solid rgba(255,255,255,.10); }
   .edit-profile-card h2 { margin-bottom: 1.25rem; }
   .current-avatar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
   .current-avatar img, .current-avatar .avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
-  .current-avatar .avatar-placeholder { background: #f252ca; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; }
+  .current-avatar .avatar-placeholder { background: rgba(255,255,255,.10); color: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; }
   .form-actions { margin-top: 1.5rem; display: flex; gap: .75rem; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="edit-profile-card">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
-      <button type="button" class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme" aria-pressed="false">
-        <span id="themeToggleLabel">Switch to Night</span>
-        <span class="theme-dot" aria-hidden="true"></span>
-      </button>
-    </div>
   <h2>Edit Profile</h2>
 
   <div class="current-avatar">
@@ -30,7 +24,7 @@
     {% endif %}
     <div>
       <strong>{{ request.user.username }}</strong>
-      <p style="font-size:.85rem; color:#888;">Change your profile picture below</p>
+      <p style="font-size:.85rem; color:rgba(255,255,255,.62);">Change your profile picture below</p>
     </div>
   </div>
 
