@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.db.models import Avg, Count, Prefetch
+from django.db.models import Avg, Count, Prefetch, Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
-from .models import Comment, CommentLike, Follow, Like, Post, PostImage, Profile, Rating
-from .forms import PostForm, ProfileForm
+from datetime import timedelta
+from .models import Comment, CommentLike, Follow, Like, Message, Post, PostImage, Profile, Rating
+from .forms import MessageForm, PostForm, ProfileForm
 
 User = get_user_model()
 
@@ -73,6 +74,22 @@ def _attach_current_user_comment_likes(posts, user):
             comment.current_user_liked = comment.id in liked_comment_ids
 
 
+def _get_followers_for_user(user):
+    followers_qs = (
+        Follow.objects.filter(following=user)
+        .select_related("follower")
+        .order_by("-created_at")
+    )
+
+    follower_users = []
+    for follow in followers_qs:
+        follower = follow.follower
+        Profile.objects.get_or_create(user=follower)
+        follower_users.append(follower)
+
+    return follower_users
+
+
 def feed(request):
     posts = (
         Post.objects.select_related("user", "user__profile")
@@ -81,6 +98,7 @@ def feed(request):
             avg_rating=Avg("ratings__value"),
             ratings_count=Count("ratings", distinct=True),
             comments_count=Count("comments", distinct=True),
+            shares_count=Count("shared_messages", distinct=True),
         )
         .all()[:50]
     )
@@ -97,9 +115,14 @@ def feed(request):
     _attach_current_user_comment_likes(posts, request.user)
     _attach_comment_threads(posts)
 
+    followers = []
+    if request.user.is_authenticated:
+        followers = _get_followers_for_user(request.user)
+
     return render(request, "posts/feed.html", {
         "posts": posts,
         "liked_ids": liked_ids,
+        "followers": followers,
     })
 
 
@@ -352,3 +375,160 @@ def toggle_follow(request, username):
     if not created:
         follow.delete()
     return redirect("profile", username=username)
+
+
+@login_required
+def messages(request, username=None):
+    follower_users = _get_followers_for_user(request.user)
+
+    selected_user = None
+    thread_messages = []
+    thread_items = []
+    form = MessageForm()
+
+    if username:
+        selected_user = get_object_or_404(User, username=username)
+        is_follower = Follow.objects.filter(
+            follower=selected_user,
+            following=request.user,
+        ).exists()
+        if not is_follower:
+            return render(request, "posts/messages.html", {
+                "followers": follower_users,
+                "selected_user": None,
+                "thread_messages": [],
+                "form": form,
+                "error": "You can only message people who follow you.",
+            }, status=404)
+
+        if request.method == "POST":
+            form = MessageForm(request.POST)
+            if form.is_valid():
+                text = form.cleaned_data["text"].strip()
+                if text:
+                    Message.objects.create(
+                        sender=request.user,
+                        recipient=selected_user,
+                        text=text,
+                    )
+                return redirect("messages_thread", username=selected_user.username)
+
+        thread_messages = list(
+            Message.objects.filter(
+                Q(sender=request.user, recipient=selected_user)
+                | Q(sender=selected_user, recipient=request.user)
+            )
+            .select_related("sender", "recipient", "post")
+            .order_by("created_at")
+        )
+
+        shared_post_ids = [m.post_id for m in thread_messages if m.post_id]
+        shared_posts = []
+        liked_ids = set()
+
+        if shared_post_ids:
+            shared_posts = list(
+                Post.objects.filter(id__in=shared_post_ids)
+                .select_related("user", "user__profile")
+                .prefetch_related("images")
+                .annotate(
+                    avg_rating=Avg("ratings__value"),
+                    ratings_count=Count("ratings", distinct=True),
+                    comments_count=Count("comments", distinct=True),
+                )
+            )
+
+            for post in shared_posts:
+                Profile.objects.get_or_create(user=post.user)
+
+            _attach_current_user_ratings(shared_posts, request.user)
+
+            liked_ids = set(
+                Like.objects.filter(user=request.user, post_id__in=shared_post_ids)
+                .values_list("post_id", flat=True)
+            )
+
+            posts_by_id = {p.id: p for p in shared_posts}
+            for msg in thread_messages:
+                if msg.post_id and msg.post_id in posts_by_id:
+                    msg.post = posts_by_id[msg.post_id]
+
+        # Insert date separators only when there is a longer pause between messages
+        gap_threshold = timedelta(hours=6)
+        previous_dt = None
+        previous_date = None
+        for msg in thread_messages:
+            current_dt = timezone.localtime(msg.created_at)
+            current_date = current_dt.date()
+            if previous_dt is None:
+                thread_items.append({
+                    "kind": "separator",
+                    "label": current_dt.strftime("%b %d, %Y"),
+                })
+            else:
+                if current_date != previous_date or (current_dt - previous_dt) >= gap_threshold:
+                    thread_items.append({
+                        "kind": "separator",
+                        "label": current_dt.strftime("%b %d, %Y"),
+                    })
+
+            thread_items.append({
+                "kind": "message",
+                "message": msg,
+            })
+            previous_dt = current_dt
+            previous_date = current_date
+
+        # Mark incoming messages as read when viewing the thread
+        Message.objects.filter(
+            sender=selected_user,
+            recipient=request.user,
+            read_at__isnull=True,
+        ).update(read_at=timezone.now())
+
+    return render(request, "posts/messages.html", {
+        "followers": follower_users,
+        "selected_user": selected_user,
+        "thread_messages": thread_messages,
+        "thread_items": thread_items,
+        "liked_ids": liked_ids if username else set(),
+        "form": form,
+    })
+
+
+@login_required
+@require_POST
+def post_share(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    recipient_username = request.POST.get("recipient", "").strip()
+    recipient = get_object_or_404(User, username=recipient_username)
+
+    if recipient == request.user:
+        if _wants_json(request):
+            return JsonResponse({"ok": False}, status=400)
+        return redirect("feed")
+
+    can_message = Follow.objects.filter(
+        follower=recipient,
+        following=request.user,
+    ).exists()
+    if not can_message:
+        if _wants_json(request):
+            return JsonResponse({"ok": False}, status=403)
+        return redirect("feed")
+
+    Message.objects.create(
+        sender=request.user,
+        recipient=recipient,
+        post=post,
+        text="",
+    )
+
+    if _wants_json(request):
+        return JsonResponse({
+            "ok": True,
+            "post_id": post.id,
+            "shares_count": post.shared_messages.count(),
+        })
+
+    return redirect("feed")

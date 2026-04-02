@@ -187,3 +187,32 @@ class Follow(models.Model):
 
     def __str__(self) -> str:
         return f"{self.follower} follows {self.following}"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_messages",
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_messages",
+    )
+    text = models.TextField(blank=True, default="")
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.SET_NULL,
+        related_name="shared_messages",
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"Message {self.id} from {self.sender} to {self.recipient}"

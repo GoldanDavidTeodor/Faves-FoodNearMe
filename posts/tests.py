@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Comment, Like, Post, Rating
+from .models import Comment, Follow, Like, Message, Post, Rating
 
 User = get_user_model()
 
@@ -113,3 +113,61 @@ class PostCommentTests(TestCase):
 
         reply = Comment.objects.get(user=self.user, post=self.post, text="Reply comment")
         self.assertEqual(reply.parent_id, parent.id)
+
+
+class MessagesTests(TestCase):
+    def setUp(self):
+        self.me = User.objects.create_user(username="me", password="pass12345")
+        self.follower = User.objects.create_user(username="fan", password="pass12345")
+        self.stranger = User.objects.create_user(username="stranger", password="pass12345")
+
+        Follow.objects.create(follower=self.follower, following=self.me)
+
+    def test_messages_page_requires_login(self):
+        response = self.client.get(reverse("messages"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_can_open_thread_with_follower(self):
+        self.client.login(username="me", password="pass12345")
+        response = self.client.get(reverse("messages_thread", args=["fan"]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_cannot_open_thread_with_non_follower(self):
+        self.client.login(username="me", password="pass12345")
+        response = self.client.get(reverse("messages_thread", args=["stranger"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_message_creates_message(self):
+        self.client.login(username="me", password="pass12345")
+        url = reverse("messages_thread", args=["fan"]) 
+
+        self.client.post(url, {"text": "hello"})
+
+        self.assertTrue(
+            Message.objects.filter(sender=self.me, recipient=self.follower, text="hello").exists()
+        )
+
+
+class SharePostTests(TestCase):
+    def setUp(self):
+        self.me = User.objects.create_user(username="me", password="pass12345")
+        self.follower = User.objects.create_user(username="fan", password="pass12345")
+        self.author = User.objects.create_user(username="author", password="pass12345")
+
+        Follow.objects.create(follower=self.follower, following=self.me)
+        self.post = Post.objects.create(user=self.author, title="Shared post")
+
+    def test_share_post_creates_message_with_post(self):
+        self.client.login(username="me", password="pass12345")
+        url = reverse("post_share", args=[self.post.id])
+
+        self.client.post(url, {"recipient": "fan"})
+
+        self.assertTrue(
+            Message.objects.filter(
+                sender=self.me,
+                recipient=self.follower,
+                post=self.post,
+                text="",
+            ).exists()
+        )

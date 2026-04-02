@@ -167,7 +167,7 @@
         <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i> For You</a></li>
         {% if user.is_authenticated %}
         <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i> Profile</a></li>
-        <li><span><i class="ci-Chat"></i> Messages</span></li>
+        <li><a href="{% url 'messages' %}"><i class="ci-Chat"></i> Messages</a></li>
         <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i> Create</a></li>
         {% else %}
         <li><a href="{% url 'login' %}"><i class="ci-Lock_Open"></i> Login</a></li>

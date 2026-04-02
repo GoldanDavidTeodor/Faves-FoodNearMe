@@ -522,7 +522,12 @@
           {% if post.comments_count %}<span class="count">{{ post.comments_count }}</span>{% endif %}
         </div>
         <div class="action-group">
-          <button class="action-btn" type="button"><i class="ci-Paper_Plane"></i></button>
+          {% if user.is_authenticated %}
+          <button class="action-btn" type="button" data-share-toggle data-share-post-id="{{ post.id }}" data-share-action="{% url 'post_share' post.id %}" aria-label="Share post"><i class="ci-Paper_Plane"></i></button>
+          {% else %}
+          <span class="action-btn"><i class="ci-Paper_Plane"></i></span>
+          {% endif %}
+          <span class="count" data-share-count="{{ post.id }}">{{ post.shares_count|default:0 }}</span>
         </div>
         <div class="action-group">
           {% if user.is_authenticated %}
@@ -695,6 +700,127 @@
     <p>No posts yet. Be the first to share a food spot!</p>
   </div>
 {% endfor %}
+
+{% if user.is_authenticated %}
+<div class="comment-modal-backdrop" id="shareModal" aria-hidden="true">
+  <div class="card" style="width: min(520px, 100%); padding: 0; overflow: hidden;" role="dialog" aria-modal="true" aria-label="Share post">
+    <div style="padding: 1rem 1.05rem; border-bottom: 1px solid rgba(255,255,255,.10); display:flex; align-items:center; justify-content:space-between; gap:.8rem;">
+      <div style="font-family: 'Space Grotesk', 'Manrope', sans-serif; font-weight: 900;">Share</div>
+      <button type="button" class="comment-modal-close" data-share-close aria-label="Close">&times;</button>
+    </div>
+    <div id="shareList" style="max-height: min(62vh, 520px); overflow-y:auto; padding: .5rem;">
+      {% if followers %}
+        {% for u in followers %}
+          <button type="button" data-share-recipient="{{ u.username }}" style="width:100%; text-align:left; background: transparent; border: 1px solid transparent; border-radius: 14px; padding: .6rem .7rem; display:flex; align-items:center; gap:.7rem; cursor:pointer; color: rgba(255,255,255,.88);">
+            {% if u.profile.avatar %}
+              <img src="{{ u.profile.avatar.url }}" alt="" style="width:38px; height:38px; border-radius:50%; object-fit:cover; flex-shrink:0;" />
+            {% else %}
+              <div style="width:38px; height:38px; border-radius:50%; background: rgba(255,255,255,.10); display:flex; align-items:center; justify-content:center; font-weight: 900;">{{ u.username|first|upper }}</div>
+            {% endif %}
+            <div style="min-width:0;">
+              <div style="font-weight: 900; font-size: .95rem; line-height: 1.15;">{{ u.username }}</div>
+              <div style="font-size: .78rem; color: rgba(255,255,255,.55); margin-top:.1rem;">Send post</div>
+            </div>
+          </button>
+        {% endfor %}
+      {% else %}
+        <div style="padding: .85rem 1rem; color: rgba(255,255,255,.62); font-weight: 750;">No followers yet.</div>
+      {% endif %}
+    </div>
+    <form id="shareForm" method="post" action="" style="display:none;">
+      {% csrf_token %}
+      <input type="hidden" name="recipient" id="shareRecipient" value="">
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const modal = document.getElementById('shareModal');
+    const form = document.getElementById('shareForm');
+    const recipientInput = document.getElementById('shareRecipient');
+    const closeBtn = document.querySelector('[data-share-close]');
+
+    let activePostId = null;
+    let activeAction = null;
+
+    function openShare(postId, actionUrl) {
+      activePostId = postId;
+      activeAction = actionUrl;
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeShare() {
+      activePostId = null;
+      activeAction = null;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.addEventListener('click', (e) => {
+      const toggle = e.target.closest('[data-share-toggle]');
+      if (toggle) {
+        e.preventDefault();
+        openShare(toggle.getAttribute('data-share-post-id'), toggle.getAttribute('data-share-action'));
+        return;
+      }
+
+      const recipientBtn = e.target.closest('[data-share-recipient]');
+      if (recipientBtn && activePostId) {
+        e.preventDefault();
+        const username = recipientBtn.getAttribute('data-share-recipient');
+        recipientInput.value = username;
+        form.action = activeAction || '';
+
+        const body = new FormData(form);
+        fetch(form.action, {
+          method: 'POST',
+          body,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then(r => r.ok ? r.json() : Promise.reject(r))
+          .then((payload) => {
+            if (payload && typeof payload.shares_count === 'number') {
+              const countEl = document.querySelector(`[data-share-count="${payload.post_id}"]`);
+              if (countEl) {
+                countEl.textContent = payload.shares_count;
+              }
+            }
+            closeShare();
+          })
+          .catch(() => {
+            // Silent failure: keep modal open
+          });
+      }
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeShare);
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeShare();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeShare();
+      }
+    });
+
+    const shareList = document.getElementById('shareList');
+    if (shareList) {
+      shareList.style.scrollbarWidth = 'thin';
+      shareList.style.scrollbarColor = 'var(--brand) transparent';
+    }
+  })();
+</script>
+{% endif %}
 
 <div class="rating-modal-backdrop" id="ratingModal" aria-hidden="true">
   <div class="rating-modal" role="dialog" aria-modal="true" aria-labelledby="rating-modal-title">

@@ -15,3 +15,15 @@ class ProfileForm(forms.ModelForm):
         widgets = {
             "avatar": forms.ClearableFileInput(attrs={"accept": "image/*"}),
         }
+
+
+class MessageForm(forms.Form):
+    text = forms.CharField(
+        max_length=2000,
+        widget=forms.Textarea(attrs={
+            "rows": 1,
+            "placeholder": "",
+            "maxlength": "2000",
+            "required": True,
+        }),
+    )
