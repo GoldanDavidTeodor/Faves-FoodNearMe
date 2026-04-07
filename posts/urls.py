@@ -7,6 +7,7 @@ urlpatterns = [
     path("messages/", views.messages, name="messages"),
     path("messages/<str:username>/", views.messages, name="messages_thread"),
     path("posts/<int:post_id>/share/", views.post_share, name="post_share"),
+    path("posts/<int:post_id>/report/", views.post_report, name="post_report"),
     path("posts/new/", views.post_create, name="post_create"),
     path("posts/<int:post_id>/like/", views.post_like, name="post_like"),
     path("comments/<int:comment_id>/like/", views.comment_like, name="comment_like"),

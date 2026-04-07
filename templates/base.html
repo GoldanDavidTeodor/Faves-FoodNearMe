@@ -102,6 +102,23 @@
         font-weight: 650;
         height: 34px;
       }
+
+      .sidebar-field-btn {
+        appearance: none;
+        -webkit-appearance: none;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .sidebar-field-btn:hover {
+        background: rgba(255,255,255,.06);
+        border-color: rgba(255,255,255,.14);
+      }
+
+      .sidebar-field-btn[aria-pressed="true"] {
+        border-color: rgba(183, 144, 147, .45);
+        box-shadow: 0 0 0 3px rgba(183, 144, 147, .16);
+      }
       .sidebar-field::placeholder { color: rgba(238,241,248,.5); }
       .sidebar-row { display: flex; gap: .55rem; margin-top: .6rem; }
       .sidebar-pill {
@@ -180,9 +197,15 @@
         <div class="sidebar-divider" aria-hidden="true"></div>
         <div class="sidebar-you-title">You</div>
         <div class="sidebar-divider tight" aria-hidden="true"></div>
-        <select class="sidebar-field" aria-label="My location" disabled>
-          <option selected>My Location</option>
-        </select>
+        <button
+          type="button"
+          class="sidebar-field sidebar-field-btn"
+          id="myLocationButton"
+          aria-label="My location"
+          aria-pressed="false"
+        >
+          My Location
+        </button>
         <div class="sidebar-row" aria-hidden="true">
           <div class="sidebar-pill">Cravings</div>
           <div class="sidebar-pill">Surprise Me</div>

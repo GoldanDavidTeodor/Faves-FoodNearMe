@@ -49,6 +49,12 @@ class Post(models.Model):
     description = models.TextField(blank=True)
     address_text = models.CharField(max_length=255, blank=True)
 
+    tags = models.ManyToManyField(
+        "Tag",
+        blank=True,
+        related_name="posts",
+    )
+
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lng = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
@@ -59,6 +65,17 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title} by {self.user}"
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class PostImage(models.Model):
@@ -167,6 +184,28 @@ class CommentLike(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} likes comment {self.comment_id}"
+
+
+class PostReport(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_reports",
+    )
+    reason = models.CharField(max_length=200, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("post", "reporter")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Report {self.id} on {self.post_id} by {self.reporter}"
 
 
 class Follow(models.Model):

@@ -81,9 +81,43 @@
   .post-header a { font-weight: 750; color: rgba(255,255,255,.92); text-decoration: none; font-size: .95rem; }
   .post-header a:hover { text-decoration: underline; }
   .post-header .post-date { font-size: .75rem; color: rgba(255,255,255,.55); margin-top: .15rem; }
+  .post-menu { position: relative; }
   .post-menu-btn { background: none; border: none; color: #8e8e8e; cursor: pointer; padding: .2rem; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
   .post-menu-btn:hover { color: rgba(255,255,255,.92); }
   .post-menu-dots { width: 4px; height: 4px; border-radius: 50%; background: currentColor; box-shadow: -6px 0 0 currentColor, 6px 0 0 currentColor; display: inline-block; }
+  .post-menu-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 180px;
+    background: rgba(22, 21, 20, .92);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    box-shadow: 0 26px 72px rgba(0,0,0,.55);
+    padding: 6px;
+    display: none;
+    z-index: 50;
+  }
+  .post-menu.open .post-menu-popover { display: block; }
+
+  .post-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .6rem;
+    border: 0;
+    background: transparent;
+    color: rgba(255,255,255,.88);
+    padding: .55rem .65rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 850;
+    text-decoration: none;
+    font-size: .92rem;
+  }
+  .post-menu-item:hover { background: rgba(183, 144, 147, .12); }
+  .post-menu-item.danger { color: rgba(255,255,255,.92); }
   .post-images { position: relative; width: 100%; background: #000; }
   .post-images img { width: 100%; display: none; object-fit: cover; max-height: 580px; }
   .post-images img.active { display: block; }
@@ -109,6 +143,18 @@
   .post-desc { font-size: .9rem; color: rgba(255,255,255,.62); margin-bottom: .25rem; line-height: 1.45; }
   .post-meta { font-size: .8rem; color: rgba(255,255,255,.55); display: flex; align-items: center; gap: .3rem; }
   .post-meta i { font-size: .95rem; }
+
+  .post-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0 .25rem; }
+  .post-tag {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+    color: rgba(255,255,255,.78);
+    border-radius: 999px;
+    padding: .18rem .55rem;
+    font-size: .75rem;
+    font-weight: 850;
+    line-height: 1.2;
+  }
 
   .rating-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
   .rating-modal-backdrop.active { display: flex; }
@@ -217,11 +263,19 @@
   .comment-modal-close { background: none; border: none; font-size: 1.35rem; color: rgba(255,255,255,.62); cursor: pointer; line-height: 1; }
   
   .comment-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: .75rem .9rem; }
-  .comment-list, .inline-comments-list { scrollbar-width: thin; scrollbar-color: #f252ca transparent; }
+  .comment-list, .inline-comments-list { scrollbar-width: thin; scrollbar-color: var(--brand) transparent; }
   .comment-list::-webkit-scrollbar, .inline-comments-list::-webkit-scrollbar { width: 8px; }
   .comment-list::-webkit-scrollbar-track, .inline-comments-list::-webkit-scrollbar-track { background: transparent; }
-  .comment-list::-webkit-scrollbar-thumb, .inline-comments-list::-webkit-scrollbar-thumb { background: #f252ca; border-radius: 999px; border: 1px solid #ffd1ec; }
-  .comment-list::-webkit-scrollbar-thumb:hover, .inline-comments-list::-webkit-scrollbar-thumb:hover { background: #e340b8; }
+  .comment-list::-webkit-scrollbar-thumb, .inline-comments-list::-webkit-scrollbar-thumb {
+    background: var(--brand);
+    background: color-mix(in srgb, var(--brand) 70%, transparent);
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+  }
+  .comment-list::-webkit-scrollbar-thumb:hover, .inline-comments-list::-webkit-scrollbar-thumb:hover {
+    background: var(--brand);
+    background: color-mix(in srgb, var(--brand) 82%, transparent);
+  }
   
   .comment-item { display: flex; align-items: flex-start; gap: .55rem; margin-bottom: .7rem; }
   .comment-avatar, .comment-avatar-placeholder { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
@@ -298,6 +352,158 @@
   body[data-theme="night"] .comment-modal-right .comment-form { background: rgba(0,0,0,.16); border-top: 1px solid rgba(255,255,255,.10); }
   body[data-theme="night"] .comment-input-row { background: rgba(0,0,0,.22); border-color: rgba(255,255,255,.14); }
 
+  /* ==========================================
+     Home (feed) right-side My Location panel
+     ========================================== */
+  .feed-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  /* Keep the feed posts sized/positioned like before (post cards max out at ~620px). */
+  .feed-main {
+    flex: 0 1 620px;
+    width: 620px;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .feed-side {
+    flex: 0 0 auto;
+    width: 0;
+    display: none;
+    min-width: 320px;
+  }
+  .feed-side.active {
+    display: block;
+    position: fixed;
+    top: 16px;
+    bottom: 16px;
+    right: 16px;
+    /* Fill remaining space to the right of the feed column (without pushing posts). */
+    width: clamp(360px, calc(100vw - 282px - 620px - 76px), 720px);
+    z-index: 9;
+  }
+
+  .my-location-card {
+    background: rgba(22, 21, 20, .92);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    box-shadow: 0 18px 60px rgba(0,0,0,.45);
+    overflow: hidden;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .my-location-card-header {
+    padding: .95rem 1rem .7rem;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+  .my-location-card-title {
+    font-family: "Space Grotesk", "Manrope", sans-serif;
+    font-weight: 900;
+    letter-spacing: .1px;
+  }
+  .my-location-card-body {
+    padding: .95rem 1rem 1rem;
+    flex: 0 0 auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+
+
+  .my-location-status {
+    font-size: .82rem;
+    font-weight: 750;
+    color: rgba(255,255,255,.62);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+  }
+  .my-location-status strong { color: rgba(255,255,255,.88); font-weight: 900; }
+  .my-location-status .pill {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 999px;
+    padding: .28rem .55rem;
+    font-size: .78rem;
+    font-weight: 900;
+    color: rgba(255,255,255,.78);
+    white-space: nowrap;
+  }
+
+  .my-location-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .95rem;
+    align-items: start;
+  }
+
+  .my-location-map-wrap {
+    width: var(--my-location-map-size);
+    height: var(--my-location-map-size);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.22);
+  }
+
+  .my-location-card {
+    --my-location-map-size: clamp(220px, 46vh, 520px);
+  }
+  #myLocationMap {
+    width: 100%;
+    height: 100%;
+  }
+
+  .my-location-controls { margin-top: 0; }
+
+  @media (max-width: 1280px) {
+    .my-location-card { --my-location-map-size: clamp(220px, 40vh, 480px); }
+  }
+
+  @media (max-width: 1100px) {
+    .my-location-grid { grid-template-columns: 1fr; }
+    .my-location-map-wrap { width: 100%; height: clamp(240px, 42vh, 520px); }
+  }
+  .my-location-range-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .my-location-range-label { font-weight: 850; font-size: .88rem; color: rgba(255,255,255,.88); }
+  .my-location-range-value { font-size: .82rem; font-weight: 800; color: rgba(255,255,255,.62); }
+  .my-location-slider {
+    width: 100%;
+    margin-top: .45rem;
+    accent-color: var(--brand);
+  }
+
+  .my-location-apply {
+    width: 100%;
+    margin-top: .85rem;
+    border-radius: 12px;
+    padding: .62rem .85rem;
+    font-weight: 900;
+  }
+
+  .my-location-clear {
+    width: 100%;
+    margin-top: .55rem;
+    border-radius: 12px;
+    padding: .62rem .85rem;
+    font-weight: 900;
+  }
+
+  @media (max-width: 1100px) {
+    .feed-layout { display: block; }
+    .feed-main { width: 100%; }
+    .feed-side { width: 100%; flex: 0 0 auto; margin-bottom: 1.1rem; }
+    .feed-side.active { position: static; height: auto; width: 100%; }
+  }
+
   /* =====================================================
      Profile-style comment modal (shared with profile page)
      ===================================================== */
@@ -315,19 +521,47 @@
     box-shadow: 0 32px 88px rgba(0,0,0,.55);
   }
   .comment-modal-left { background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; min-height: 0; }
-  .modal-tab-panel { flex: 1; min-height: 0; }
+  .modal-tab-panel { flex: 1; min-height: 0; display: flex; min-width: 0; }
   .modal-images-grid {
     height: 100%;
-    overflow: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 12px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 12px;
   }
   .modal-images-grid::-webkit-scrollbar { width: 10px; }
   .modal-images-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 999px; }
-  .modal-image-tile { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.22); aspect-ratio: 1 / 1; }
-  .modal-image-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-image-tile {
+    width: 100%;
+    flex: 0 0 calc(100% - 24px);
+    background: rgba(0,0,0,.22);
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-image-tile img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+  .modal-no-images {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(238,241,248,.62);
+    font-weight: 800;
+    padding: 1rem;
+  }
 
   .comment-modal-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .modal-right-top {
@@ -391,7 +625,7 @@
   .comment-list,
   .comment-modal-left {
     scrollbar-width: thin; /* Firefox */
-    scrollbar-color: rgba(183, 144, 147, .62) transparent;
+    scrollbar-color: var(--brand) transparent;
   }
   .comment-list::-webkit-scrollbar,
   .comment-modal-left::-webkit-scrollbar { width: 8px; }
@@ -399,13 +633,17 @@
   .comment-modal-left::-webkit-scrollbar-track { background: transparent; }
   .comment-list::-webkit-scrollbar-thumb,
   .comment-modal-left::-webkit-scrollbar-thumb {
-    background: rgba(183, 144, 147, .52);
+    background: var(--brand);
+    background: color-mix(in srgb, var(--brand) 68%, transparent);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   .comment-list::-webkit-scrollbar-thumb:hover,
-  .comment-modal-left::-webkit-scrollbar-thumb:hover { background: rgba(183, 144, 147, .68); }
+  .comment-modal-left::-webkit-scrollbar-thumb:hover {
+    background: var(--brand);
+    background: color-mix(in srgb, var(--brand) 82%, transparent);
+  }
 
   .comment-form { border-top: 1px solid rgba(255,255,255,.10); padding: .85rem 1.15rem; background: rgba(0,0,0,.16); }
   .comment-input-row { display: flex; align-items: center; gap: .5rem; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: .2rem .5rem .2rem .8rem; background: rgba(0,0,0,.22); }
@@ -452,8 +690,11 @@
 {% endblock %}
 
 {% block content %}
-{% for post in posts %}
-  <div class="post-card">
+{{ post_locations|json_script:"feedPostLocations" }}
+<div class="feed-layout">
+  <div class="feed-main">
+  {% for post in posts %}
+    <div class="post-card" id="post-{{ post.id }}">
     <div class="post-header">
       <div class="post-header-left">
         {% if post.user.profile.avatar %}
@@ -466,9 +707,22 @@
           <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
         </div>
       </div>
-      <button type="button" class="post-menu-btn" aria-label="Post options">
-        <span class="post-menu-dots" aria-hidden="true"></span>
-      </button>
+      <div class="post-menu" data-post-menu>
+        <button type="button" class="post-menu-btn" aria-label="Post options" data-post-menu-btn>
+          <span class="post-menu-dots" aria-hidden="true"></span>
+        </button>
+        <div class="post-menu-popover" role="menu" aria-label="Post options" data-post-menu-popover>
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'post_report' post.id %}" style="margin:0;">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'feed' %}">
+              <button type="submit" class="post-menu-item danger" role="menuitem">Report post</button>
+            </form>
+          {% else %}
+            <a class="post-menu-item" role="menuitem" href="{% url 'login' %}">Log in to report</a>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     <div class="post-tabs">
@@ -547,6 +801,16 @@
       </div>
 
       <p class="post-title-line">{{ post.title }}</p>
+
+      {% with tags=post.tags.all %}
+        {% if tags %}
+          <div class="post-tags" aria-label="Post tags">
+            {% for tag in tags %}
+              <span class="post-tag">#{{ tag.name }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
       {% if post.description %}
         <p class="post-desc">{{ post.description }}</p>
@@ -695,11 +959,49 @@
       </div>
     </div>
   </div>
-{% empty %}
-  <div class="card" style="text-align:center; max-width:540px; margin:2rem auto;">
-    <p>No posts yet. Be the first to share a food spot!</p>
+  {% empty %}
+    <div class="card" style="text-align:center; max-width:540px; margin:2rem auto;">
+      <p>No posts yet. Be the first to share a food spot!</p>
+    </div>
+  {% endfor %}
   </div>
-{% endfor %}
+
+  <aside class="feed-side" id="myLocationSide" aria-hidden="true">
+    <div class="my-location-card" id="myLocationCard">
+      <div class="my-location-card-header">
+        <div class="my-location-card-title">My Location</div>
+      </div>
+      <div class="my-location-card-body">
+        <div class="my-location-grid">
+          <div class="my-location-map-wrap">
+            <div id="myLocationMap" aria-label="My location map"></div>
+          </div>
+          <div class="my-location-controls">
+            <div class="my-location-status" id="myLocationStatus" aria-live="polite"></div>
+
+            <div class="my-location-range-row" style="margin-top: .65rem;">
+              <div class="my-location-range-label">Range</div>
+              <div class="my-location-range-value" id="myLocationRangeValue"></div>
+            </div>
+            <input
+              class="my-location-slider"
+              id="myLocationRange"
+              type="range"
+              min="1"
+              max="25"
+              step="1"
+              value="5"
+              aria-label="Range in kilometers"
+            />
+
+            <button type="button" class="btn btn-secondary my-location-apply" id="applyLocationFilter">Apply filter</button>
+            <button type="button" class="btn btn-secondary my-location-clear" id="removeLocationFilter">Remove filters</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
 
 {% if user.is_authenticated %}
 <div class="comment-modal-backdrop" id="shareModal" aria-hidden="true">
@@ -1039,7 +1341,7 @@ document.querySelectorAll('[data-modal-tab]').forEach(btn => {
 
 function renderModalImagesGrid(images) {
   if (!images.length) {
-    commentModalImages.innerHTML = '<div class="mini-empty" style="grid-column:1/-1;">No images</div>';
+    commentModalImages.innerHTML = '<div class="modal-no-images">No images</div>';
     return;
   }
   commentModalImages.innerHTML = images
@@ -1160,5 +1462,360 @@ document.querySelectorAll('[data-comment-toggle]').forEach(btn => {
     panel.classList.toggle('active');
   });
 });
+
+// --- My Location panel (right side) ---
+let myLocationMap = null;
+let myLocationMarker = null;
+let myLocationCircle = null;
+let myLocationLatLng = null;
+let nearbyPostsLayer = null;
+
+function getFeedPostLocations() {
+  const el = document.getElementById('feedPostLocations');
+  if (!el) return [];
+  try {
+    const parsed = JSON.parse(el.textContent || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function haversineKm(aLat, aLng, bLat, bLng) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const s1 = Math.sin(dLat / 2);
+  const s2 = Math.sin(dLng / 2);
+  const aa = s1 * s1 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * (s2 * s2);
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(aa)));
+}
+
+function renderNearbyPostMarkers() {
+  if (!myLocationMap || !nearbyPostsLayer) return;
+  nearbyPostsLayer.clearLayers();
+
+  if (!myLocationLatLng) {
+    return;
+  }
+
+  const all = getFeedPostLocations();
+  const rangeKm = getRangeKm();
+  const brand = getBrandColor();
+
+  all.forEach((p) => {
+    if (typeof p?.lat !== 'number' || typeof p?.lng !== 'number') return;
+
+    const dist = haversineKm(myLocationLatLng.lat, myLocationLatLng.lng, p.lat, p.lng);
+    if (dist > rangeKm) return;
+
+    const marker = L.circleMarker([p.lat, p.lng], {
+      radius: 6,
+      color: brand,
+      fillColor: brand,
+      fillOpacity: 0.85,
+      weight: 2,
+    });
+    marker.bindPopup(`<div style="font-weight:900;">${(p.title || 'Post')}</div><div style="opacity:.75; font-weight:750; font-size:.85rem;">@${(p.username || '')}</div>`);
+    marker.addTo(nearbyPostsLayer);
+  });
+}
+
+function renderMyLocationStatus() {
+  const el = document.getElementById('myLocationStatus');
+  if (!el) return;
+
+  const filterActive = hasActiveLocationFilter();
+  if (!myLocationLatLng) {
+    el.innerHTML = filterActive ? '<span><strong>Filter:</strong> active</span><span class="pill">Remove filters</span>' : '<span><strong>Filter:</strong> off</span><span class="pill">Pick a point</span>';
+    return;
+  }
+
+  const coords = `${myLocationLatLng.lat.toFixed(5)}, ${myLocationLatLng.lng.toFixed(5)}`;
+  el.innerHTML = `<span><strong>Selected:</strong> ${coords}</span><span class="pill">${filterActive ? 'Filter active' : 'Not applied'}</span>`;
+}
+
+function readLocationParams() {
+  const params = new URLSearchParams(window.location.search);
+  const lat = parseFloat(params.get('lat'));
+  const lng = parseFloat(params.get('lng'));
+  const rangeKm = parseInt(params.get('range_km') || params.get('rangeKm') || '', 10);
+  return {
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
+    rangeKm: Number.isFinite(rangeKm) ? rangeKm : null,
+  };
+}
+
+function isMyLocationPanelPinnedOpen() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('ml') === '1';
+}
+
+function setMyLocationPanelPinnedOpen(pinned) {
+  try {
+    const url = new URL(window.location.href);
+    if (pinned) {
+      url.searchParams.set('ml', '1');
+    } else {
+      url.searchParams.delete('ml');
+    }
+
+    const nextQuery = url.searchParams.toString();
+    const nextUrl = nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname;
+    window.history.replaceState({}, '', nextUrl);
+  } catch (e) {
+    // ignore
+  }
+}
+
+function hasActiveLocationFilter() {
+  const initial = readLocationParams();
+  return initial.lat !== null && initial.lng !== null && initial.rangeKm !== null;
+}
+
+function clampRangeKm(value) {
+  if (!Number.isFinite(value)) return 5;
+  return Math.min(25, Math.max(1, Math.round(value)));
+}
+
+function getBrandColor() {
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#b79093';
+  } catch (e) {
+    return '#b79093';
+  }
+}
+
+function getRangeKm() {
+  const el = document.getElementById('myLocationRange');
+  const parsed = parseInt(el?.value || '5', 10);
+  return Number.isFinite(parsed) ? parsed : 5;
+}
+
+function setRangeLabel() {
+  const label = document.getElementById('myLocationRangeValue');
+  if (label) {
+    label.textContent = `${getRangeKm()} km`;
+  }
+}
+
+function ensureMyLocationMap() {
+  if (myLocationMap || !window.L) return;
+
+  const mapEl = document.getElementById('myLocationMap');
+  if (!mapEl) return;
+
+  myLocationMap = L.map('myLocationMap', { zoomControl: true }).setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(myLocationMap);
+
+  nearbyPostsLayer = L.layerGroup().addTo(myLocationMap);
+
+  const initial = readLocationParams();
+  if (initial.lat !== null && initial.lng !== null) {
+    myLocationLatLng = L.latLng(initial.lat, initial.lng);
+
+    myLocationMap.setView([initial.lat, initial.lng], 13);
+    myLocationMarker = L.marker(myLocationLatLng).addTo(myLocationMap);
+
+    const brand = getBrandColor();
+    myLocationCircle = L.circle(myLocationLatLng, {
+      radius: getRangeKm() * 1000,
+      color: brand,
+      fillColor: brand,
+      fillOpacity: 0.14,
+      weight: 2,
+    }).addTo(myLocationMap);
+
+    renderMyLocationStatus();
+    renderNearbyPostMarkers();
+  }
+
+  // If the browser provides geolocation, use it as a starting view.
+  if (navigator.geolocation && navigator.geolocation.getCurrentPosition) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          myLocationMap.setView([lat, lng], 13);
+        }
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 60000, timeout: 4000 }
+    );
+  }
+
+  myLocationMap.on('click', (e) => {
+    myLocationLatLng = e.latlng;
+    renderMyLocationStatus();
+
+    if (!myLocationMarker) {
+      myLocationMarker = L.marker(myLocationLatLng).addTo(myLocationMap);
+    } else {
+      myLocationMarker.setLatLng(myLocationLatLng);
+    }
+
+    const radiusMeters = getRangeKm() * 1000;
+    const brand = getBrandColor();
+    if (!myLocationCircle) {
+      myLocationCircle = L.circle(myLocationLatLng, {
+        radius: radiusMeters,
+        color: brand,
+        fillColor: brand,
+        fillOpacity: 0.14,
+        weight: 2,
+      }).addTo(myLocationMap);
+    } else {
+      myLocationCircle.setLatLng(myLocationLatLng);
+      myLocationCircle.setRadius(radiusMeters);
+    }
+
+    renderNearbyPostMarkers();
+  });
+}
+
+function updateMyLocationCircleRadius() {
+  setRangeLabel();
+  if (myLocationCircle) {
+    myLocationCircle.setRadius(getRangeKm() * 1000);
+  }
+  renderNearbyPostMarkers();
+}
+
+function setMyLocationPanelOpen(isOpen) {
+  const side = document.getElementById('myLocationSide');
+  const btn = document.getElementById('myLocationButton');
+
+  if (!side) return;
+
+  side.classList.toggle('active', isOpen);
+  side.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  if (btn) btn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+
+  // Persist panel open state so it doesn't collapse on navigation.
+  setMyLocationPanelPinnedOpen(isOpen);
+
+  if (isOpen) {
+    setRangeLabel();
+    ensureMyLocationMap();
+    renderMyLocationStatus();
+    // Leaflet needs a resize once visible.
+    setTimeout(() => myLocationMap?.invalidateSize(), 60);
+  }
+}
+
+// Hook up the sidebar button (exists in base.html).
+const myLocationBtn = document.getElementById('myLocationButton');
+if (myLocationBtn) {
+  myLocationBtn.addEventListener('click', () => {
+    const side = document.getElementById('myLocationSide');
+    const isOpen = !!(side && side.classList.contains('active'));
+    setMyLocationPanelOpen(!isOpen);
+  });
+}
+
+const myLocationRange = document.getElementById('myLocationRange');
+if (myLocationRange) {
+  myLocationRange.addEventListener('input', updateMyLocationCircleRadius);
+  setRangeLabel();
+}
+
+renderMyLocationStatus();
+
+const applyLocationFilterBtn = document.getElementById('applyLocationFilter');
+if (applyLocationFilterBtn) {
+  applyLocationFilterBtn.addEventListener('click', () => {
+    if (!myLocationLatLng) {
+      setMyLocationPanelOpen(true);
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('lat', myLocationLatLng.lat.toFixed(6));
+    url.searchParams.set('lng', myLocationLatLng.lng.toFixed(6));
+    url.searchParams.set('range_km', String(getRangeKm()));
+    window.location.assign(url.toString());
+  });
+}
+
+const removeLocationFilterBtn = document.getElementById('removeLocationFilter');
+if (removeLocationFilterBtn) {
+  const syncRemoveState = () => {
+    removeLocationFilterBtn.disabled = !hasActiveLocationFilter();
+    removeLocationFilterBtn.style.opacity = removeLocationFilterBtn.disabled ? '0.6' : '1';
+    removeLocationFilterBtn.style.cursor = removeLocationFilterBtn.disabled ? 'not-allowed' : 'pointer';
+  };
+
+  syncRemoveState();
+
+  removeLocationFilterBtn.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('lat');
+    url.searchParams.delete('lng');
+    url.searchParams.delete('range_km');
+    url.searchParams.delete('rangeKm');
+    url.searchParams.set('ml', '1');
+
+    // If no search params remain, drop the '?' entirely.
+    const next = url.searchParams.toString();
+    const target = next ? `${url.pathname}?${next}` : url.pathname;
+    window.location.assign(target);
+  });
+}
+
+// If a location filter is present in the URL, open the panel and sync the slider.
+(function initMyLocationFromQuery() {
+  const initial = readLocationParams();
+  if (initial.rangeKm !== null) {
+    const slider = document.getElementById('myLocationRange');
+    if (slider) slider.value = String(clampRangeKm(initial.rangeKm));
+    setRangeLabel();
+  }
+  if (initial.lat !== null && initial.lng !== null) {
+    setMyLocationPanelOpen(true);
+    return;
+  }
+
+  if (isMyLocationPanelPinnedOpen()) {
+    setMyLocationPanelOpen(true);
+  }
+})();
+
+// --- Post 3-dots menu ---
+(function initPostMenus() {
+  const menus = Array.from(document.querySelectorAll('[data-post-menu]'));
+  if (!menus.length) return;
+
+  function closeAll(exceptMenu) {
+    menus.forEach((menu) => {
+      if (exceptMenu && menu === exceptMenu) return;
+      menu.classList.remove('open');
+    });
+  }
+
+  menus.forEach((menu) => {
+    const btn = menu.querySelector('[data-post-menu-btn]');
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const willOpen = !menu.classList.contains('open');
+      closeAll();
+      menu.classList.toggle('open', willOpen);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-post-menu]')) return;
+    closeAll();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
 </script>
 {% endblock %}

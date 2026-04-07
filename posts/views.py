@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.db.models import Avg, Count, Prefetch, Q
+from django.db.models import Avg, Count, Prefetch, Q, Value, FloatField, ExpressionWrapper, F
+from django.db.models.functions import ACos, Cos, Sin, Radians, Greatest, Least
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from datetime import timedelta
-from .models import Comment, CommentLike, Follow, Like, Message, Post, PostImage, Profile, Rating
+from .models import Comment, CommentLike, Follow, Like, Message, Post, PostImage, PostReport, Profile, Rating
 from .forms import MessageForm, PostForm, ProfileForm
 
 User = get_user_model()
@@ -91,17 +92,61 @@ def _get_followers_for_user(user):
 
 
 def feed(request):
-    posts = (
+    def _parse_float(raw_value):
+        try:
+            return float(raw_value)
+        except (TypeError, ValueError):
+            return None
+
+    filter_lat = _parse_float(request.GET.get("lat"))
+    filter_lng = _parse_float(request.GET.get("lng"))
+    filter_range_km = _parse_float(request.GET.get("range_km"))
+
+    has_location_filter = (
+        filter_lat is not None
+        and filter_lng is not None
+        and filter_range_km is not None
+        and -90.0 <= filter_lat <= 90.0
+        and -180.0 <= filter_lng <= 180.0
+        and 0.0 < filter_range_km <= 250.0
+    )
+
+    posts_qs = (
         Post.objects.select_related("user", "user__profile")
-        .prefetch_related("images", COMMENT_PREFETCH)
+        .prefetch_related("images", "tags", COMMENT_PREFETCH)
         .annotate(
             avg_rating=Avg("ratings__value"),
             ratings_count=Count("ratings", distinct=True),
             comments_count=Count("comments", distinct=True),
             shares_count=Count("shared_messages", distinct=True),
         )
-        .all()[:50]
     )
+
+    if has_location_filter:
+        # Spherical law of cosines distance (km), clamped to avoid ACos domain errors.
+        lat0 = Radians(Value(filter_lat))
+        lng0 = Radians(Value(filter_lng))
+        lat1 = Radians(F("lat"))
+        lng1 = Radians(F("lng"))
+
+        cosine_angle = (
+            Cos(lat0) * Cos(lat1) * Cos(lng1 - lng0)
+            + Sin(lat0) * Sin(lat1)
+        )
+        cosine_angle = Least(Value(1.0), Greatest(Value(-1.0), cosine_angle))
+
+        distance_km = ExpressionWrapper(
+            Value(6371.0) * ACos(cosine_angle),
+            output_field=FloatField(),
+        )
+
+        posts_qs = (
+            posts_qs.filter(lat__isnull=False, lng__isnull=False)
+            .annotate(distance_km=distance_km)
+            .filter(distance_km__lte=filter_range_km)
+        )
+
+    posts = posts_qs.all()[:50]
 
     # Build a set of post IDs the current user has liked
     liked_ids = set()
@@ -115,6 +160,24 @@ def feed(request):
     _attach_current_user_comment_likes(posts, request.user)
     _attach_comment_threads(posts)
 
+    post_locations = []
+    for post in posts:
+        if post.lat is None or post.lng is None:
+            continue
+        try:
+            lat = float(post.lat)
+            lng = float(post.lng)
+        except (TypeError, ValueError):
+            continue
+
+        post_locations.append({
+            "id": post.id,
+            "title": post.title,
+            "username": post.user.username,
+            "lat": lat,
+            "lng": lng,
+        })
+
     followers = []
     if request.user.is_authenticated:
         followers = _get_followers_for_user(request.user)
@@ -123,6 +186,13 @@ def feed(request):
         "posts": posts,
         "liked_ids": liked_ids,
         "followers": followers,
+        "post_locations": post_locations,
+        "location_filter": {
+            "active": has_location_filter,
+            "lat": filter_lat,
+            "lng": filter_lng,
+            "range_km": filter_range_km,
+        },
     })
 
 
@@ -138,6 +208,7 @@ def post_create(request):
             post = form.save(commit=False)
             post.user = request.user
             post.save()
+            form.apply_tags(post)
             for img in request.FILES.getlist("images"):
                 PostImage.objects.create(post=post, image=img)
             return redirect("feed")
@@ -294,21 +365,23 @@ def profile(request, username):
     user_posts = (
         Post.objects.filter(user=profile_user)
         .select_related("user", "user__profile")
-        .prefetch_related("images", COMMENT_PREFETCH)
+        .prefetch_related("images", "tags", COMMENT_PREFETCH)
         .annotate(
             avg_rating=Avg("ratings__value"),
             ratings_count=Count("ratings", distinct=True),
             comments_count=Count("comments", distinct=True),
+            forwards_count=Count("shared_messages", distinct=True),
         )
     )
     liked_posts = (
         Post.objects.filter(likes__user=profile_user)
         .select_related("user", "user__profile")
-        .prefetch_related("images", COMMENT_PREFETCH)
+        .prefetch_related("images", "tags", COMMENT_PREFETCH)
         .annotate(
             avg_rating=Avg("ratings__value"),
             ratings_count=Count("ratings", distinct=True),
             comments_count=Count("comments", distinct=True),
+            forwards_count=Count("shared_messages", distinct=True),
         )
         .order_by("-likes__created_at")
     )
@@ -430,7 +503,7 @@ def messages(request, username=None):
             shared_posts = list(
                 Post.objects.filter(id__in=shared_post_ids)
                 .select_related("user", "user__profile")
-                .prefetch_related("images")
+                .prefetch_related("images", "tags")
                 .annotate(
                     avg_rating=Avg("ratings__value"),
                     ratings_count=Count("ratings", distinct=True),
@@ -532,3 +605,30 @@ def post_share(request, post_id):
         })
 
     return redirect("feed")
+
+
+@login_required
+@require_POST
+def post_report(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    reason = request.POST.get("reason", "").strip()
+
+    report, created = PostReport.objects.get_or_create(
+        post=post,
+        reporter=request.user,
+        defaults={"reason": reason},
+    )
+
+    if not created and reason and not report.reason:
+        report.reason = reason
+        report.save(update_fields=["reason"])
+
+    if _wants_json(request):
+        return JsonResponse({
+            "ok": True,
+            "created": created,
+            "post_id": post.id,
+        })
+
+    next_url = request.POST.get("next", "feed")
+    return redirect(next_url)

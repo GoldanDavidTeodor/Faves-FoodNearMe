@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Comment, Follow, Like, Message, Post, Rating
+from .models import Comment, Follow, Like, Message, Post, PostReport, Rating, Tag
 
 User = get_user_model()
 
@@ -171,3 +171,67 @@ class SharePostTests(TestCase):
                 text="",
             ).exists()
         )
+
+
+class PostCreateTagsTests(TestCase):
+    def setUp(self):
+        self.author = User.objects.create_user(username="author", password="pass12345")
+
+    def test_create_post_with_tags_creates_and_links_tags(self):
+        self.client.login(username="author", password="pass12345")
+        url = reverse("post_create")
+
+        response = self.client.post(url, {
+            "title": "Lemonade",
+            "tags": "sweet, sour, cold",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        post = Post.objects.get(title="Lemonade")
+        self.assertEqual(set(post.tags.values_list("name", flat=True)), {"sweet", "sour", "cold"})
+        self.assertTrue(Tag.objects.filter(name="sweet").exists())
+
+
+class PostReportTests(TestCase):
+    def setUp(self):
+        self.reporter = User.objects.create_user(username="reporter", password="pass12345")
+        self.author = User.objects.create_user(username="author", password="pass12345")
+        self.post = Post.objects.create(user=self.author, title="Spam post")
+
+    def test_report_post_creates_report(self):
+        self.client.login(username="reporter", password="pass12345")
+        url = reverse("post_report", args=[self.post.id])
+
+        response = self.client.post(url, {"next": reverse("feed")})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(PostReport.objects.filter(post=self.post, reporter=self.reporter).exists())
+
+    def test_report_route_rejects_get(self):
+        self.client.login(username="reporter", password="pass12345")
+        url = reverse("post_report", args=[self.post.id])
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 405)
+
+
+class ProfileForwardsCountTests(TestCase):
+    def setUp(self):
+        self.profile_user = User.objects.create_user(username="author", password="pass12345")
+        self.sender = User.objects.create_user(username="sender", password="pass12345")
+        self.recipient = User.objects.create_user(username="recipient", password="pass12345")
+
+        self.post = Post.objects.create(user=self.profile_user, title="Wings")
+
+    def test_profile_posts_are_annotated_with_forwards_count(self):
+        Message.objects.create(sender=self.sender, recipient=self.recipient, post=self.post, text="")
+        Message.objects.create(sender=self.sender, recipient=self.recipient, post=self.post, text="")
+        Message.objects.create(sender=self.sender, recipient=self.recipient, post=self.post, text="")
+
+        response = self.client.get(reverse("profile", args=[self.profile_user.username]))
+
+        self.assertEqual(response.status_code, 200)
+        user_posts = list(response.context["user_posts"])
+        self.assertEqual(len(user_posts), 1)
+        self.assertEqual(user_posts[0].forwards_count, 3)
