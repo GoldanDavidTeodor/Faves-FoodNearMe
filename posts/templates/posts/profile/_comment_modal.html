@@ -1,0 +1,54 @@
+<div class="comment-modal-backdrop" id="commentModal" aria-hidden="true">
+  <div class="comment-modal" role="dialog" aria-modal="true" aria-labelledby="comment-modal-title">
+    <div class="comment-modal-left">
+      <div id="modal-images" class="modal-tab-panel" style="display:block;">
+        <div class="modal-images-grid" id="commentModalImages"></div>
+      </div>
+      <div id="modal-location" class="modal-tab-panel" style="display:none;">
+        <div id="modal-map" style="width:100%; height:100%;"></div>
+      </div>
+    </div>
+
+    <div class="comment-modal-right">
+      <div class="modal-right-top">
+        <div class="modal-top-row">
+          <div class="modal-user">
+            <div id="commentModalUserAvatar"></div>
+            <div class="modal-user-name" id="commentModalUserName">Post</div>
+          </div>
+          <button type="button" class="modal-menu" id="commentModalClose" aria-label="Close">
+            <div class="modal-menu-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+          </button>
+        </div>
+
+        <h3 class="modal-post-title" id="comment-modal-title">Post Title</h3>
+        <div class="modal-post-desc" id="commentModalDescription"></div>
+        <div class="modal-post-date" id="commentModalDate"></div>
+
+        <div class="modal-tabs">
+          <button type="button" class="modal-tab-btn active" data-modal-tab="modal-images">Images</button>
+          <button type="button" class="modal-tab-btn" data-modal-tab="modal-location">Location</button>
+        </div>
+      </div>
+
+      <div class="comment-list" id="commentModalList"></div>
+      {% if user.is_authenticated %}
+      <form class="comment-form" id="commentModalForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ profile_url }}">
+        <input type="hidden" name="parent_id" value="" id="commentModalParentId">
+        <div class="replying-hint" id="commentModalReplyingHint">
+          <span>Replying to <strong id="commentModalReplyingUser"></strong></span>
+          <button type="button" id="commentModalReplyCancel">&times;</button>
+        </div>
+        <div class="comment-input-row">
+          <textarea name="text" id="commentModalText" placeholder="Add a comment..." maxlength="1000" required></textarea>
+          <button type="submit" class="comment-send" aria-label="Send comment"><i class="ci-Paper_Plane"></i></button>
+        </div>
+      </form>
+      {% else %}
+        <div class="comment-login-note">Log in to leave a comment.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div class="profile-controls">
+  <div class="profile-filters" aria-hidden="true">
+    <div class="profile-select" id="profileSort" data-profile-select>
+      <button type="button" class="profile-select-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span data-profile-select-label>Newest</span>
+        <span class="profile-select-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="profile-select-menu" role="listbox" aria-label="Sort posts">
+        <button type="button" class="profile-select-option" role="option" data-value="newest" aria-selected="true">Newest</button>
+        <button type="button" class="profile-select-option" role="option" data-value="oldest" aria-selected="false">Oldest</button>
+      </div>
+    </div>
+    <div class="profile-select" id="profileRatingFilter" data-profile-select>
+      <button type="button" class="profile-select-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span data-profile-select-label>All</span>
+        <span class="profile-select-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="profile-select-menu" role="listbox" aria-label="Filter posts">
+        <button type="button" class="profile-select-option" role="option" data-value="all" aria-selected="true">All</button>
+        <button type="button" class="profile-select-option" role="option" data-value="high" aria-selected="false">High Rated</button>
+      </div>
+    </div>
+  </div>
+  <div class="profile-tabs" role="tablist" aria-label="Profile tabs">
+    <button type="button" class="profile-tab active" data-profile-tab="posts" role="tab" aria-selected="true">Posts</button>
+    <button type="button" class="profile-tab" data-profile-tab="liked" role="tab" aria-selected="false">Liked</button>
+  </div>
+  <div class="profile-tabs-divider" aria-hidden="true"></div>
+</div>

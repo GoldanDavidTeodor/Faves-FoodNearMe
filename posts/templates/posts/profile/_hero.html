@@ -1,0 +1,40 @@
+<div class="profile-hero">
+  <div class="profile-hero-inner">
+    <div class="profile-avatar-square">
+      {% if profile_user.profile.avatar %}
+        <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}">
+      {% else %}
+        <div class="profile-avatar-initial">{{ profile_user.username|first|upper }}</div>
+      {% endif %}
+    </div>
+
+    <div style="min-width:0;">
+      <div class="profile-info">
+        <div class="profile-username">{{ profile_user.username }}</div>
+
+        <div class="profile-metrics" aria-label="Profile metrics">
+          <span class="metric"><i class="ci-Heart_01"></i> {{ received_likes_count|default_if_none:0 }}</span>
+          <span class="metric"><i class="ci-User_Circle"></i> {{ followers_count|default_if_none:0 }}</span>
+        </div>
+
+        <div class="profile-actions">
+          {% if user.is_authenticated and user != profile_user %}
+            <form method="post" action="{% url 'toggle_follow' profile_user.username %}">
+              {% csrf_token %}
+              {% if is_following %}
+                <button type="submit" class="btn btn-ghost">Unfollow</button>
+              {% else %}
+                <button type="submit" class="btn btn-ghost">Follow</button>
+              {% endif %}
+            </form>
+            <a class="btn btn-ghost" href="{% url 'feed' %}">Random</a>
+          {% endif %}
+          {% if user.is_authenticated and user == profile_user %}
+            <a class="btn btn-ghost" href="{% url 'feed' %}">Random</a>
+            <a class="btn btn-ghost" href="{% url 'edit_profile' %}">Edit</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

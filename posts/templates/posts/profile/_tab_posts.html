@@ -1,0 +1,9 @@
+<section class="profile-tab-panel active" id="profile-posts" data-profile-panel="posts" aria-label="Posts">
+  <div class="mini-grid">
+  {% for post in user_posts %}
+    {% include "posts/profile/_mini_post_card.html" with post=post %}
+  {% empty %}
+    <div class="card" style="text-align:center;">No posts yet.</div>
+  {% endfor %}
+  </div>
+</section>
