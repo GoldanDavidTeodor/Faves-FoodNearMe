@@ -1,0 +1,46 @@
+<section class="card messages-card">
+  <div class="messages-card-header">
+    <h2>
+      {% if selected_user %}
+        Conversation with {{ selected_user.username }}
+      {% else %}
+        Conversation
+      {% endif %}
+    </h2>
+  </div>
+
+  {% if error %}
+    <div class="thread-empty">{{ error }}</div>
+  {% endif %}
+
+  {% if selected_user %}
+    <div class="thread-body" id="thread">
+      {% if thread_items %}
+        {% for item in thread_items %}
+          {% if item.kind == 'separator' %}
+            <div class="date-separator">{{ item.label }}</div>
+          {% else %}
+            {% with m=item.message %}
+              {% include "posts/messages/_message_row.html" %}
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <div class="thread-empty">No messages yet. Say hi.</div>
+      {% endif %}
+    </div>
+
+    <form class="thread-form" method="post" action="{% url 'messages_thread' selected_user.username %}">
+      {% csrf_token %}
+      <div class="thread-input-row">
+        {{ form.text }}
+        <button type="submit" class="thread-send" aria-label="Send message"><i class="ci-Paper_Plane"></i></button>
+      </div>
+      {% if form.errors %}
+        <div class="form-help thread-form-errors">{{ form.errors }}</div>
+      {% endif %}
+    </form>
+  {% else %}
+    <div class="thread-empty">No conversation selected</div>
+  {% endif %}
+</section>

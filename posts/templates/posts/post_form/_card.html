@@ -1,0 +1,10 @@
+<section class="post-form-card" aria-label="New post">
+  {% include "posts/post_form/_header.html" %}
+
+  <form method="post" enctype="multipart/form-data" class="post-form-layout">
+    {% csrf_token %}
+
+    {% include "posts/post_form/_body.html" %}
+    {% include "posts/post_form/_footer.html" %}
+  </form>
+</section>

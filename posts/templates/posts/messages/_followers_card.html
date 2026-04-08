@@ -1,0 +1,33 @@
+<section class="card messages-card">
+  <div class="messages-card-header">
+    <h2>Followers</h2>
+    <div class="followers-count">{{ followers|length }}</div>
+  </div>
+
+  <div class="followers-search">
+    <div class="followers-search-pill">
+      <i class="ci-Search" aria-hidden="true"></i>
+      <input id="followersSearch" class="followers-search-input" type="text" placeholder="Search..." autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="followers-list">
+    {% if followers %}
+      {% for u in followers %}
+        <a class="person-row {% if selected_user and selected_user.username == u.username %}active{% endif %}" href="{% url 'messages_thread' u.username %}" data-follower-row data-username="{{ u.username|lower }}">
+          {% if u.profile.avatar %}
+            <img class="person-avatar" src="{{ u.profile.avatar.url }}" alt="{{ u.username }}" />
+          {% else %}
+            <div class="person-avatar-placeholder" aria-hidden="true">{{ u.username|first|upper }}</div>
+          {% endif %}
+          <div class="person-meta">
+            <div class="person-name">{{ u.username }}</div>
+            <div class="person-sub">Tap to open chat</div>
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}
+      <div class="thread-empty">No followers yet.</div>
+    {% endif %}
+  </div>
+</section>

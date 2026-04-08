@@ -1,0 +1,17 @@
+<div class="msg-line {% if m.sender_id == user.id %}outgoing{% else %}incoming{% endif %}">
+  {% if m.sender_id == user.id %}
+    <div class="msg-time">{{ m.created_at|date:"H:i" }}</div>
+    {% if m.post %}
+      {% include "posts/messages/_shared_post.html" with post=m.post %}
+    {% else %}
+      <div class="bubble me">{{ m.text|linebreaksbr }}</div>
+    {% endif %}
+  {% else %}
+    {% if m.post %}
+      {% include "posts/messages/_shared_post.html" with post=m.post %}
+    {% else %}
+      <div class="bubble">{{ m.text|linebreaksbr }}</div>
+    {% endif %}
+    <div class="msg-time">{{ m.created_at|date:"H:i" }}</div>
+  {% endif %}
+</div>

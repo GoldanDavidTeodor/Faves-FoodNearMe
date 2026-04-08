@@ -1,0 +1,12 @@
+{% for field in form %}
+  {% if field.name != 'lat' and field.name != 'lng' %}
+    <div class="form-group">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<small class="post-form-help">{{ field.help_text }}</small>{% endif %}
+      {% for error in field.errors %}
+        <div class="post-form-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}

@@ -1,0 +1,51 @@
+<article class="mini-post-card shared-post">
+  <div class="mini-head">
+    <div class="mini-user">
+      {% if post.user.profile.avatar %}
+        <img src="{{ post.user.profile.avatar.url }}" alt="" class="mini-avatar">
+      {% else %}
+        <div class="mini-avatar-placeholder">{{ post.user.username|first|upper }}</div>
+      {% endif %}
+      <div class="mini-user-meta">
+        <a class="mini-user-name" href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a>
+        <div class="mini-date">{{ post.created_at|date:"M d Y" }}</div>
+      </div>
+    </div>
+    <div class="mini-menu" aria-hidden="true"><span class="mini-menu-dots"></span></div>
+  </div>
+
+  <div class="mini-media">
+    {% if post.images.count %}
+    <div class="mini-media-grid">
+      {% for img in post.images.all|slice:":4" %}
+      <div class="mini-tile">
+        <img src="{{ img.image.url }}" alt="{{ post.title }}">
+        {% if forloop.last and post.images.count > 4 %}
+          <div class="mini-more">+{{ post.images.count|add:"-4" }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <div class="mini-empty">No images</div>
+    {% endif %}
+  </div>
+
+  <div class="mini-foot">
+    <div class="mini-actions" aria-hidden="true">
+      <div class="mini-actions-left">
+        <div class="mini-act"><span class="action-btn"><i class="ci-Heart_01"></i></span><span class="mini-count">{{ post.likes.count|default_if_none:0 }}</span></div>
+        <div class="mini-act"><span class="action-btn"><i class="ci-Chat"></i></span><span class="mini-count">{{ post.comments_count|default_if_none:post.comments.count }}</span></div>
+        <div class="mini-act"><span class="action-btn"><i class="ci-Paper_Plane"></i></span></div>
+      </div>
+      <div class="mini-act">
+        <span class="action-btn"><i class="ci-Cookie"></i></span>
+        {% if post.ratings_count %}<span class="mini-count">{{ post.avg_rating|floatformat:1 }} ({{ post.ratings_count }})</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="mini-title">{{ post.title }}</div>
+    {% if post.description %}<div class="mini-desc">{{ post.description }}</div>{% endif %}
+    {% if post.address_text %}<div class="mini-loc"><i class="ci-Map_Pin"></i> {{ post.address_text }}</div>{% endif %}
+  </div>
+</article>
