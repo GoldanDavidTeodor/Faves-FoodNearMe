@@ -146,7 +146,7 @@ def feed(request):
             .filter(distance_km__lte=filter_range_km)
         )
 
-    posts = posts_qs.all()[:50]
+    posts = posts_qs.order_by("-created_at", "-id")[:50]
 
     # Build a set of post IDs the current user has liked
     liked_ids = set()

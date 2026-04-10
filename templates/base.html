@@ -69,7 +69,8 @@
       }
       .sidebar-brand i { font-size: 1.35rem; color: rgba(255,255,255,.92); }
       .sidebar-nav { list-style: none; display: flex; flex-direction: column; gap: .2rem; }
-      .sidebar-nav a, .sidebar-nav span {
+      .sidebar-nav > li > a,
+      .sidebar-nav > li > span {
         display: flex;
         align-items: center;
         gap: .75rem;
@@ -148,6 +149,29 @@
         justify-content: center;
       }
 
+      .sidebar-more-btn {
+        display: none;
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(0,0,0,.22);
+        color: rgba(255,255,255,.78);
+        border-radius: 14px;
+        height: 42px;
+        width: 46px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+      }
+      .sidebar-more-btn:hover { background: rgba(255,255,255,.06); color: var(--text); }
+      .sidebar-more-dots {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: -7px 0 0 currentColor, 7px 0 0 currentColor;
+        display: inline-block;
+      }
+
       .main-content { margin-left: 282px; flex: 1; min-height: 100vh; }
       .container { max-width: 1200px; padding: 1.25rem 1.25rem 2.25rem; }
 
@@ -166,9 +190,77 @@
       .errorlist { color: #c00; list-style: none; font-size: .85rem; }
 
       @media (max-width: 920px) {
-        body { display: block; }
-        .sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); padding: .85rem .75rem; box-shadow: none; border-radius: 0; top: 0; left: 0; bottom: auto; }
-        .sidebar-panel { display: none; }
+        body {
+          display: block;
+          /* Offset content under the fixed topbar */
+          padding-top: 72px;
+        }
+        /* Mobile: sidebar becomes a topbar with icon-only main nav + expandable "More" menu */
+        .sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: auto;
+          width: 100%;
+          max-width: 100%;
+          border-right: none;
+          border-left: none;
+          border-top: none;
+          border-bottom: 1px solid rgba(255,255,255,.08);
+          padding: .55rem .6rem;
+          box-shadow: none;
+          border-radius: 0;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: .35rem;
+          overflow: visible;
+          z-index: 40;
+        }
+        .sidebar-brand { display: none; }
+
+        .sidebar-nav {
+          /* Equal-width icon slots so the row always fits (works for 5, 6, etc.) */
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: 1fr;
+          gap: .25rem;
+          flex: 1;
+          min-width: 0;
+        }
+        .sidebar-nav li { min-width: 0; }
+        .sidebar-nav a {
+          justify-content: center;
+          padding: .62rem 0;
+          border-radius: 14px;
+          /* Ensure no text takes width in icon-only mode */
+          font-size: 0;
+          gap: 0;
+          min-width: 44px;
+        }
+        .sidebar-nav a:hover { transform: none; }
+        .sidebar-nav i { width: auto; font-size: 1.55rem; }
+        .sidebar-label { display: none !important; }
+        .sidebar-nav a .sidebar-label { display: none !important; }
+
+        .sidebar-more-btn { display: inline-flex; }
+
+        .sidebar-you {
+          display: none;
+          position: absolute;
+          top: calc(100% + 10px);
+          left: .6rem;
+          right: .6rem;
+          margin-top: 0;
+          padding: .85rem .85rem .95rem;
+          background: var(--surface-strong);
+          border: 1px solid rgba(255,255,255,.10);
+          border-radius: 18px;
+          box-shadow: 0 26px 72px rgba(0,0,0,.55);
+          z-index: 25;
+        }
+        .sidebar-you.is-open { display: block; }
         .main-content { margin-left: 0; }
         .container { max-width: 100%; padding: .9rem .75rem 1.5rem; }
       }
@@ -179,21 +271,34 @@
     <aside class="sidebar">
       <a class="sidebar-brand" href="{% url 'feed' %}">Faves</a>
       <ul class="sidebar-nav">
-        <li><a href="{% url 'feed' %}"><i class="ci-House_01"></i> Home</a></li>
-        <li><a href="{% url 'feed' %}"><i class="ci-Compass"></i> Explore</a></li>
-        <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i> For You</a></li>
+        <li><a href="{% url 'feed' %}"><i class="ci-House_01"></i><span class="sidebar-label">Home</span></a></li>
+        <li><a href="{% url 'feed' %}"><i class="ci-Compass"></i><span class="sidebar-label">Explore</span></a></li>
+        <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i><span class="sidebar-label">For You</span></a></li>
         {% if user.is_authenticated %}
-        <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i> Profile</a></li>
-        <li><a href="{% url 'messages' %}"><i class="ci-Chat"></i> Messages</a></li>
-        <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i> Create</a></li>
+        <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i><span class="sidebar-label">Profile</span></a></li>
+        <li><a href="{% url 'messages' %}"><i class="ci-Chat"></i><span class="sidebar-label">Messages</span></a></li>
+        <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i><span class="sidebar-label">Create</span></a></li>
         {% else %}
-        <li><a href="{% url 'login' %}"><i class="ci-Lock_Open"></i> Login</a></li>
-        <li><a href="{% url 'register' %}"><i class="ci-User_Add"></i> Register</a></li>
+        <li><a href="{% url 'login' %}"><i class="ci-Lock_Open"></i><span class="sidebar-label">Login</span></a></li>
+        <li><a href="{% url 'register' %}"><i class="ci-User_Add"></i><span class="sidebar-label">Register</span></a></li>
         {% endif %}
       </ul>
 
       {% if user.is_authenticated %}
-      <div class="sidebar-you">
+      <button
+        type="button"
+        class="sidebar-more-btn"
+        id="sidebarMoreToggle"
+        aria-label="More"
+        aria-expanded="false"
+        aria-controls="sidebarMoreMenu"
+      >
+        <span class="sidebar-more-dots" aria-hidden="true"></span>
+      </button>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+      <div class="sidebar-you" id="sidebarMoreMenu">
         <div class="sidebar-divider" aria-hidden="true"></div>
         <div class="sidebar-you-title">You</div>
         <div class="sidebar-divider tight" aria-hidden="true"></div>
@@ -664,6 +769,34 @@
             form.submit();
           }
         });
+
+        // Mobile "More" menu: expands/collapses the sidebar-you section.
+        const moreToggle = document.getElementById('sidebarMoreToggle');
+        const moreMenu = document.getElementById('sidebarMoreMenu');
+
+        if (moreToggle && moreMenu) {
+          function setMoreOpen(nextOpen) {
+            moreMenu.classList.toggle('is-open', nextOpen);
+            moreToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+          }
+
+          moreToggle.addEventListener('click', () => {
+            const isOpen = moreMenu.classList.contains('is-open');
+            setMoreOpen(!isOpen);
+          });
+
+          document.addEventListener('click', event => {
+            if (!moreMenu.classList.contains('is-open')) {
+              return;
+            }
+
+            const clickedToggle = event.target === moreToggle || moreToggle.contains(event.target);
+            const clickedMenu = moreMenu.contains(event.target);
+            if (!clickedToggle && !clickedMenu) {
+              setMoreOpen(false);
+            }
+          });
+        }
       })();
     </script>
 

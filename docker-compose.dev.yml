@@ -1,0 +1,8 @@
+# Development-only overrides (live code bind-mount).
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+services:
+  web:
+    volumes:
+      - .:/app
