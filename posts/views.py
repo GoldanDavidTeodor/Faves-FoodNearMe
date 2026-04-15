@@ -1,3 +1,4 @@
+import random
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -6,6 +7,7 @@ from django.db.models.functions import ACos, Cos, Sin, Radians, Greatest, Least
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from datetime import timedelta
 from .models import Comment, CommentLike, Follow, Like, Message, Post, PostImage, PostReport, Profile, Rating
 from .forms import MessageForm, PostForm, ProfileForm
@@ -91,7 +93,7 @@ def _get_followers_for_user(user):
     return follower_users
 
 
-def feed(request):
+def _parse_feed_location_filter(request):
     def _parse_float(raw_value):
         try:
             return float(raw_value)
@@ -111,6 +113,10 @@ def feed(request):
         and 0.0 < filter_range_km <= 250.0
     )
 
+    return has_location_filter, filter_lat, filter_lng, filter_range_km
+
+
+def _get_feed_posts_queryset(*, has_location_filter, filter_lat, filter_lng, filter_range_km):
     posts_qs = (
         Post.objects.select_related("user", "user__profile")
         .prefetch_related("images", "tags", COMMENT_PREFETCH)
@@ -144,6 +150,26 @@ def feed(request):
             posts_qs.filter(lat__isnull=False, lng__isnull=False)
             .annotate(distance_km=distance_km)
             .filter(distance_km__lte=filter_range_km)
+        )
+
+    return posts_qs
+
+
+def feed(request):
+    raw_query = request.GET.get("q")
+    search_query = (raw_query or "").strip()
+
+    has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
+    posts_qs = _get_feed_posts_queryset(
+        has_location_filter=has_location_filter,
+        filter_lat=filter_lat,
+        filter_lng=filter_lng,
+        filter_range_km=filter_range_km,
+    )
+
+    if search_query:
+        posts_qs = posts_qs.filter(
+            Q(title__icontains=search_query) | Q(description__icontains=search_query)
         )
 
     posts = posts_qs.order_by("-created_at", "-id")[:50]
@@ -194,6 +220,35 @@ def feed(request):
             "range_km": filter_range_km,
         },
     })
+
+
+def surprise_me(request):
+    """Redirect to the feed anchored on a random post card."""
+    has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
+    posts_qs = _get_feed_posts_queryset(
+        has_location_filter=has_location_filter,
+        filter_lat=filter_lat,
+        filter_lng=filter_lng,
+        filter_range_km=filter_range_km,
+    )
+
+    post_ids = list(
+        posts_qs.order_by("-created_at", "-id")
+        .values_list("id", flat=True)[:50]
+    )
+
+    if not post_ids:
+        return redirect("feed")
+
+    post_id = random.choice(post_ids)
+    base_url = reverse("feed")
+    params = request.GET.copy()
+    params["open_post"] = str(post_id)
+    query = params.urlencode()
+    if query:
+        base_url = f"{base_url}?{query}"
+
+    return redirect(f"{base_url}#post-{post_id}")
 
 
 def for_you(request):

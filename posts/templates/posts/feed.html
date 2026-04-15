@@ -1409,6 +1409,37 @@ function openCommentModalFromCard(card) {
   commentModal.setAttribute('aria-hidden', 'false');
 }
 
+function maybeAutoOpenPostModalFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    const openPostId = (url.searchParams.get('open_post') || '').trim();
+    if (!openPostId) {
+      return;
+    }
+
+    const card = document.getElementById(`post-${openPostId}`);
+    if (!card) {
+      return;
+    }
+
+    // Remove the param so refresh/back doesn't keep reopening.
+    url.searchParams.delete('open_post');
+    window.history.replaceState({}, '', url.toString());
+
+    // Ensure the card is visible, then open the same modal flow as clicking the card.
+    requestAnimationFrame(() => {
+      try {
+        card.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      } catch (e) {
+        // ignore
+      }
+      openCommentModalFromCard(card);
+    });
+  } catch (e) {
+    // ignore
+  }
+}
+
 // Global Card Click
 document.querySelectorAll('.post-card').forEach(card => {
   card.addEventListener('click', (e) => {
@@ -1418,6 +1449,8 @@ document.querySelectorAll('.post-card').forEach(card => {
     }
   });
 });
+
+maybeAutoOpenPostModalFromUrl();
 
 function closeCommentModal() {
   commentModal.classList.remove('active');

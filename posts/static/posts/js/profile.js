@@ -19,10 +19,18 @@ function setProfileTab(tabName, options = {}) {
   applyProfileSort();
 
   if (updateHash) {
-    if (tabName === 'liked') {
-      history.replaceState(null, '', '#liked');
-    } else if (location.hash === '#liked') {
-      history.replaceState(null, '', location.pathname + location.search);
+    try {
+      const url = new URL(window.location.href);
+      // Avoid anchor scrolling; keep tab state in query string.
+      url.hash = '';
+      if (tabName === 'liked') {
+        url.searchParams.set('tab', 'liked');
+      } else {
+        url.searchParams.delete('tab');
+      }
+      history.replaceState(null, '', url.toString());
+    } catch (e) {
+      // ignore
     }
   }
 }
@@ -216,10 +224,31 @@ document.querySelectorAll('[data-profile-tab]').forEach(btn => {
   btn.addEventListener('click', () => setProfileTab(btn.dataset.profileTab, { updateHash: true }));
 });
 
+let initialTab = 'posts';
+try {
+  const url = new URL(window.location.href);
+  const tab = (url.searchParams.get('tab') || '').trim();
+  if (tab === 'liked') {
+    initialTab = 'liked';
+  } else if (location.hash === '#liked') {
+    initialTab = 'liked';
+  }
+} catch (e) {
+  if (location.hash === '#liked') {
+    initialTab = 'liked';
+  }
+}
+
+setProfileTab(initialTab, { updateHash: initialTab === 'liked' && location.hash === '#liked' });
+
+// If we landed on a legacy #liked URL, the browser may have auto-scrolled.
+// Ensure the profile header/card stays aligned at the top.
 if (location.hash === '#liked') {
-  setProfileTab('liked');
-} else {
-  setProfileTab('posts');
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
 }
 
 // Ensure initial sort is applied

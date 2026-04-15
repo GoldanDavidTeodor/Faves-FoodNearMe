@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path("", views.feed, name="feed"),
     path("for-you/", views.for_you, name="for_you"),
+    path("surprise/", views.surprise_me, name="surprise_me"),
     path("messages/", views.messages, name="messages"),
     path("messages/<str:username>/", views.messages, name="messages_thread"),
     path("posts/<int:post_id>/share/", views.post_share, name="post_share"),
