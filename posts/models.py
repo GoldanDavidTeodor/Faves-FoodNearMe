@@ -255,3 +255,22 @@ class Message(models.Model):
 
     def __str__(self) -> str:
         return f"Message {self.id} from {self.sender} to {self.recipient}"
+
+
+class LocationPreset(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="location_presets",
+    )
+    name = models.CharField(max_length=60)
+    lat = models.DecimalField(max_digits=9, decimal_places=6)
+    lng = models.DecimalField(max_digits=9, decimal_places=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "name")
+        ordering = ["name", "id"]
+
+    def __str__(self) -> str:
+        return f"{self.user} preset: {self.name}"

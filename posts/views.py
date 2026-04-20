@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from datetime import timedelta
-from .models import Comment, CommentLike, Follow, Like, Message, Post, PostImage, PostReport, Profile, Rating
+from .models import Comment, CommentLike, Follow, Like, LocationPreset, Message, Post, PostImage, PostReport, Profile, Rating
 from .forms import MessageForm, PostForm, ProfileForm
 
 User = get_user_model()
@@ -253,6 +253,86 @@ def surprise_me(request):
 
 def for_you(request):
     return render(request, "posts/for_you.html")
+
+
+@login_required
+def location_presets(request):
+    if request.method == "GET":
+        presets = (
+            LocationPreset.objects
+            .filter(user=request.user)
+            .order_by("name", "id")
+            .values("id", "name", "lat", "lng")
+        )
+
+        items = []
+        for p in presets:
+            try:
+                lat = float(p["lat"])
+                lng = float(p["lng"])
+            except (TypeError, ValueError):
+                continue
+            items.append({
+                "id": p["id"],
+                "name": p["name"],
+                "lat": lat,
+                "lng": lng,
+            })
+
+        return JsonResponse({"presets": items})
+
+    if request.method == "POST":
+        if not _wants_json(request):
+            return JsonResponse({"error": "Expected AJAX request"}, status=400)
+
+        try:
+            import json
+
+            payload = json.loads(request.body or "{}")
+        except Exception:
+            payload = {}
+
+        name = (payload.get("name") or "").strip()
+        lat = payload.get("lat")
+        lng = payload.get("lng")
+
+        if not name:
+            return JsonResponse({"error": "Name is required"}, status=400)
+
+        if len(name) > 60:
+            return JsonResponse({"error": "Name must be 60 characters or fewer"}, status=400)
+
+        try:
+            lat = float(lat)
+            lng = float(lng)
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Invalid coordinates"}, status=400)
+
+        if not (-90.0 <= lat <= 90.0 and -180.0 <= lng <= 180.0):
+            return JsonResponse({"error": "Coordinates out of range"}, status=400)
+
+        preset, created = LocationPreset.objects.get_or_create(
+            user=request.user,
+            name=name,
+            defaults={"lat": lat, "lng": lng},
+        )
+
+        if not created:
+            preset.lat = lat
+            preset.lng = lng
+            preset.save(update_fields=["lat", "lng"])
+
+        return JsonResponse({
+            "created": created,
+            "preset": {
+                "id": preset.id,
+                "name": preset.name,
+                "lat": float(preset.lat),
+                "lng": float(preset.lng),
+            },
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @login_required
