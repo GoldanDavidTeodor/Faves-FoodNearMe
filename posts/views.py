@@ -1,6 +1,7 @@
 import random
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Prefetch, Q, Value, FloatField, ExpressionWrapper, F
 from django.db.models.functions import ACos, Cos, Sin, Radians, Greatest, Least
@@ -9,7 +10,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from datetime import timedelta
-from .models import Comment, CommentLike, Follow, Like, LocationPreset, Message, Post, PostImage, PostReport, Profile, Rating
+from .models import Comment, CommentLike, Follow, Like, LocationPreset, Message, Post, PostImage, PostReport, Profile, Rating, Tag
 from .forms import MessageForm, PostForm, ProfileForm
 
 User = get_user_model()
@@ -116,6 +117,28 @@ def _parse_feed_location_filter(request):
     return has_location_filter, filter_lat, filter_lng, filter_range_km
 
 
+def _parse_feed_tags_filter(request):
+    raw = (request.GET.get("tags") or "").strip()
+    if not raw:
+        return []
+
+    parts = [p.strip().lower() for p in raw.split(",")]
+    cleaned = []
+    seen = set()
+    for p in parts:
+        if not p:
+            continue
+        if p.startswith("#"):
+            p = p[1:]
+        if not p:
+            continue
+        if p not in seen:
+            seen.add(p)
+            cleaned.append(p)
+
+    return cleaned
+
+
 def _get_feed_posts_queryset(*, has_location_filter, filter_lat, filter_lng, filter_range_km):
     posts_qs = (
         Post.objects.select_related("user", "user__profile")
@@ -159,6 +182,8 @@ def feed(request):
     raw_query = request.GET.get("q")
     search_query = (raw_query or "").strip()
 
+    selected_tags = _parse_feed_tags_filter(request)
+
     has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
     posts_qs = _get_feed_posts_queryset(
         has_location_filter=has_location_filter,
@@ -172,7 +197,24 @@ def feed(request):
             Q(title__icontains=search_query) | Q(description__icontains=search_query)
         )
 
-    posts = posts_qs.order_by("-created_at", "-id")[:50]
+    if selected_tags:
+        # "Best match": require at least one selected tag, then order by how
+        # many selected tags each post has (descending).
+        posts_qs = (
+            posts_qs.annotate(
+                matched_tags_count=Count(
+                    "tags",
+                    filter=Q(tags__name__in=selected_tags),
+                    distinct=True,
+                )
+            )
+            .filter(matched_tags_count__gt=0)
+            .order_by("-matched_tags_count", "-created_at", "-id")
+        )
+    else:
+        posts_qs = posts_qs.order_by("-created_at", "-id")
+
+    posts = posts_qs[:50]
 
     # Build a set of post IDs the current user has liked
     liked_ids = set()
@@ -219,7 +261,22 @@ def feed(request):
             "lng": filter_lng,
             "range_km": filter_range_km,
         },
+        "selected_tags": selected_tags,
     })
+
+
+@require_GET
+def tag_suggest(request):
+    q = (request.GET.get("q") or "").strip().lower()
+    if q.startswith("#"):
+        q = q[1:]
+
+    tags_qs = Tag.objects.all().annotate(posts_count=Count("posts", distinct=True))
+    if q:
+        tags_qs = tags_qs.filter(name__icontains=q)
+
+    tags = list(tags_qs.order_by("-posts_count", "name").values_list("name", flat=True)[:12])
+    return JsonResponse({"tags": tags})
 
 
 def surprise_me(request):

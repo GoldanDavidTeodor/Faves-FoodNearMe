@@ -59,14 +59,21 @@
     margin: 0 1rem 1rem 1rem;
   }
   .post-card {
-    background: rgba(22, 21, 20, .92);
-    border-radius: 16px;
-    margin: 0 0 1.1rem;
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
     overflow: hidden;
     max-width: 620px;
-    border: 1px solid rgba(255,255,255,.10);
+    margin: 0 0 1.1rem;
+    box-shadow: 0 18px 45px rgba(0,0,0,.28);
+    cursor: pointer;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
     animation: postReveal .34s ease both;
+  }
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.16);
+    box-shadow: 0 22px 58px rgba(0,0,0,.35);
   }
   .post-card:first-child { margin-top: .2rem; }
   @keyframes postReveal {
@@ -338,7 +345,8 @@
   }
 
   /* Night Mode */
-  body[data-theme="night"] .post-card { background: var(--surface-strong); border-color: rgba(255,255,255,.10); box-shadow: 0 16px 34px rgba(0, 0, 0, .32); }
+  body[data-theme="night"] .post-card { background: var(--surface-strong); border-color: rgba(255,255,255,.10); box-shadow: 0 18px 45px rgba(0,0,0,.28); }
+  body[data-theme="night"] .post-card:hover { border-color: rgba(255,255,255,.16); box-shadow: 0 22px 58px rgba(0,0,0,.35); }
   body[data-theme="night"] .post-images { background: rgba(0,0,0,.22); }
   body[data-theme="night"] .post-header a,
   body[data-theme="night"] .post-title-line,
@@ -416,6 +424,85 @@
     flex-direction: column;
     gap: .75rem;
   }
+
+  /* Cravings card (below My Location) */
+  .cravings-card { display: none; margin-top: .9rem; }
+  .cravings-card.active { display: flex; }
+  .cravings-input-row {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+  }
+  .cravings-input {
+    width: 100%;
+    border-radius: 999px;
+    padding: .58rem .75rem;
+    font-weight: 850;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.22);
+    color: rgba(255,255,255,.90);
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cravings-input::placeholder { color: rgba(238,241,248,.5); }
+
+  .cravings-apply {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.22);
+    color: rgba(255,255,255,.90);
+    font-weight: 950;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cravings-apply:hover { border-color: rgba(255,255,255,.18); }
+  .cravings-apply:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .cravings-suggest {
+    display: none;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(0,0,0,.22);
+  }
+  .cravings-suggest.active { display: block; }
+  .cravings-suggest-item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: rgba(255,255,255,.88);
+    padding: .55rem .7rem;
+    text-align: left;
+    cursor: pointer;
+    font-weight: 900;
+  }
+  .cravings-suggest-item:hover { background: rgba(255,255,255,.06); color: var(--text); }
+
+  .cravings-selected { display: flex; flex-wrap: wrap; gap: .45rem; }
+  .cravings-chip {
+    border-radius: 999px;
+    background: var(--brand-soft);
+    border: 1px solid rgba(255,255,255,.10);
+    padding: .28rem .55rem;
+    font-size: .78rem;
+    font-weight: 950;
+    color: rgba(255,255,255,.92);
+    cursor: pointer;
+    user-select: none;
+  }
+  .cravings-chip:hover { border-color: rgba(255,255,255,.16); }
 
 
   .my-location-status {
@@ -1105,6 +1192,27 @@
         </div>
       </div>
     </div>
+
+    <div class="my-location-card cravings-card" id="cravingsCard">
+      <div class="my-location-card-header">
+        <div class="my-location-card-title">Cravings</div>
+      </div>
+      <div class="my-location-card-body">
+        <div class="cravings-input-row">
+          <input
+            type="search"
+            class="cravings-input"
+            id="cravingsInput"
+            placeholder="Search hashtags"
+            aria-label="Search cravings hashtags"
+            autocomplete="off"
+          />
+          <button type="button" class="cravings-apply" id="cravingsApply" aria-label="Apply cravings">&gt;</button>
+        </div>
+        <div class="cravings-suggest" id="cravingsSuggest" aria-label="Hashtag suggestions"></div>
+        <div class="cravings-selected" id="cravingsSelected" aria-label="Selected cravings"></div>
+      </div>
+    </div>
   </aside>
 </div>
 
@@ -1629,6 +1737,7 @@ let myLocationLatLng = null;
 let nearbyPostsLayer = null;
 
 const locationPresetsUrl = "{% url 'location_presets' %}";
+const tagSuggestUrl = "{% url 'tag_suggest' %}";
 let myLocationPresets = [];
 let hasLoadedMyLocationPresets = false;
 
@@ -1750,6 +1859,20 @@ function haversineKm(aLat, aLng, bLat, bLng) {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(aa)));
 }
 
+function scrollToPostCard(postId) {
+  const id = String(postId || '').trim();
+  if (!id) return;
+
+  const el = document.getElementById(`post-${id}`);
+  if (!el) return;
+
+  try {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    el.scrollIntoView(true);
+  }
+}
+
 function renderNearbyPostMarkers() {
   if (!myLocationMap || !nearbyPostsLayer) return;
   nearbyPostsLayer.clearLayers();
@@ -1761,6 +1884,7 @@ function renderNearbyPostMarkers() {
   const all = getFeedPostLocations();
   const rangeKm = getRangeKm();
   const brand = getBrandColor();
+  const text = getTextColor();
 
   all.forEach((p) => {
     if (typeof p?.lat !== 'number' || typeof p?.lng !== 'number') return;
@@ -1769,13 +1893,28 @@ function renderNearbyPostMarkers() {
     if (dist > rangeKm) return;
 
     const marker = L.circleMarker([p.lat, p.lng], {
-      radius: 6,
-      color: brand,
-      fillColor: brand,
-      fillOpacity: 0.85,
-      weight: 2,
+      radius: 8,
+      color: text,
+      opacity: 0.95,
+      weight: 3,
+      fillColor: '#e53935',
+      fillOpacity: 0.95,
     });
-    marker.bindPopup(`<div style="font-weight:900;">${(p.title || 'Post')}</div><div style="opacity:.75; font-weight:750; font-size:.85rem;">@${(p.username || '')}</div>`);
+
+    marker.bindPopup(
+      `<div class="js-ml-scroll-to-post" data-post-id="${p.id}" style="cursor:pointer;">
+        <div style="font-weight:900;">${(p.title || 'Post')}</div>
+        <div style="opacity:.75; font-weight:750; font-size:.85rem;">@${(p.username || '')}</div>
+      </div>`
+    );
+
+    marker.on('popupopen', (ev) => {
+      const root = ev?.popup?.getElement?.();
+      const target = root ? root.querySelector('.js-ml-scroll-to-post') : null;
+      if (!target) return;
+      const postId = target.getAttribute('data-post-id');
+      target.addEventListener('click', () => scrollToPostCard(postId), { once: true });
+    });
     marker.addTo(nearbyPostsLayer);
   });
 }
@@ -1843,6 +1982,14 @@ function getBrandColor() {
     return getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#b79093';
   } catch (e) {
     return '#b79093';
+  }
+}
+
+function getTextColor() {
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || 'rgba(255,255,255,.92)';
+  } catch (e) {
+    return 'rgba(255,255,255,.92)';
   }
 }
 
@@ -1966,6 +2113,208 @@ function setMyLocationPanelOpen(isOpen) {
     setTimeout(() => myLocationMap?.invalidateSize(), 60);
   }
 }
+
+// --- Cravings panel (below My Location) ---
+const cravingsCard = document.getElementById('cravingsCard');
+const cravingsInput = document.getElementById('cravingsInput');
+const cravingsSuggest = document.getElementById('cravingsSuggest');
+const cravingsSelected = document.getElementById('cravingsSelected');
+const cravingsApply = document.getElementById('cravingsApply');
+const cravingsBtn = document.getElementById('cravingsButton');
+
+let cravingsSelectedTags = new Set();
+let cravingsAppliedTags = new Set();
+let cravingsSuggestTimer = null;
+
+function normalizeCravingTag(raw) {
+  let t = String(raw || '').trim().toLowerCase();
+  if (t.startsWith('#')) t = t.slice(1);
+  return t;
+}
+
+function readCravingsFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    const raw = (url.searchParams.get('tags') || '').trim();
+    if (!raw) return [];
+    return raw.split(',').map(normalizeCravingTag).filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function setCravingsPinnedOpen(pinned) {
+  try {
+    const url = new URL(window.location.href);
+    if (pinned) {
+      url.searchParams.set('cr', '1');
+      url.searchParams.set('ml', '1');
+    } else {
+      url.searchParams.delete('cr');
+    }
+
+    const nextQuery = url.searchParams.toString();
+    const nextUrl = nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname;
+    window.history.replaceState({}, '', nextUrl);
+  } catch (e) {
+    // ignore
+  }
+}
+
+function isCravingsPinnedOpen() {
+  try {
+    const url = new URL(window.location.href);
+    return url.searchParams.get('cr') === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
+function navigateWithCravingsTags(tags) {
+  const selected = Array.isArray(tags) ? tags : [];
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('open_post');
+    if (selected.length) {
+      url.searchParams.set('tags', selected.join(','));
+    } else {
+      url.searchParams.delete('tags');
+    }
+    // Keep the panel open after reload.
+    url.searchParams.set('cr', '1');
+    url.searchParams.set('ml', '1');
+    window.location.assign(url.toString());
+  } catch (e) {
+    window.location.assign(window.location.pathname);
+  }
+}
+
+function setEqual(aSet, bSet) {
+  if (aSet.size !== bSet.size) return false;
+  for (const item of aSet) {
+    if (!bSet.has(item)) return false;
+  }
+  return true;
+}
+
+function syncCravingsApplyState() {
+  if (!cravingsApply) return;
+  cravingsApply.disabled = setEqual(cravingsSelectedTags, cravingsAppliedTags);
+}
+
+function renderCravingsSelected() {
+  if (!cravingsSelected) return;
+  const tags = Array.from(cravingsSelectedTags);
+  cravingsSelected.innerHTML = tags
+    .map((t) => `<button type="button" class="cravings-chip" data-tag="${t}" aria-label="Remove #${t}">#${t}</button>`)
+    .join('');
+
+  cravingsSelected.querySelectorAll('[data-tag]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = normalizeCravingTag(btn.getAttribute('data-tag'));
+      if (!tag) return;
+      cravingsSelectedTags.delete(tag);
+      renderCravingsSelected();
+      syncCravingsApplyState();
+    });
+  });
+
+  syncCravingsApplyState();
+}
+
+function renderCravingsSuggest(tags) {
+  if (!cravingsSuggest) return;
+  const list = Array.isArray(tags) ? tags : [];
+  if (!list.length) {
+    cravingsSuggest.classList.remove('active');
+    cravingsSuggest.innerHTML = '';
+    return;
+  }
+
+  cravingsSuggest.classList.add('active');
+  cravingsSuggest.innerHTML = list
+    .map((t) => `<button type="button" class="cravings-suggest-item" data-suggest="${t}">#${t}</button>`)
+    .join('');
+
+  cravingsSuggest.querySelectorAll('[data-suggest]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = normalizeCravingTag(btn.getAttribute('data-suggest'));
+      if (!tag) return;
+      cravingsSelectedTags.add(tag);
+      cravingsInput.value = '';
+      renderCravingsSelected();
+      renderCravingsSuggest([]);
+      syncCravingsApplyState();
+    });
+  });
+}
+
+async function fetchCravingsSuggest(query) {
+  const q = normalizeCravingTag(query);
+  if (!q) {
+    renderCravingsSuggest([]);
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${tagSuggestUrl}?q=${encodeURIComponent(q)}`, {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+    });
+    if (!resp.ok) {
+      renderCravingsSuggest([]);
+      return;
+    }
+    const data = await resp.json();
+    const tags = Array.isArray(data?.tags) ? data.tags : [];
+    // Hide tags already selected.
+    renderCravingsSuggest(tags.filter((t) => !cravingsSelectedTags.has(normalizeCravingTag(t))));
+  } catch (e) {
+    renderCravingsSuggest([]);
+  }
+}
+
+function setCravingsOpen(open) {
+  if (!cravingsCard) return;
+  cravingsCard.classList.toggle('active', open);
+  if (cravingsBtn) cravingsBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
+  setCravingsPinnedOpen(open);
+  if (open) {
+    setMyLocationPanelOpen(true);
+    cravingsInput?.focus();
+  } else {
+    renderCravingsSuggest([]);
+  }
+}
+
+// Expose for base.html to call.
+window.favesToggleCravingsPanel = function () {
+  setCravingsOpen(!(cravingsCard && cravingsCard.classList.contains('active')));
+};
+
+if (cravingsInput) {
+  cravingsInput.addEventListener('input', () => {
+    if (cravingsSuggestTimer) {
+      clearTimeout(cravingsSuggestTimer);
+    }
+    cravingsSuggestTimer = setTimeout(() => fetchCravingsSuggest(cravingsInput.value), 140);
+  });
+
+  cravingsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      renderCravingsSuggest([]);
+    }
+  });
+}
+
+if (cravingsApply) {
+  cravingsApply.addEventListener('click', () => {
+    cravingsAppliedTags = new Set(cravingsSelectedTags);
+    navigateWithCravingsTags(Array.from(cravingsSelectedTags));
+  });
+}
+
 
 const myLocationPresetSelect = document.getElementById('myLocationPresetSelect');
 if (myLocationPresetSelect) {
@@ -2200,6 +2549,21 @@ if (removeLocationFilterBtn) {
 
   if (isMyLocationPanelPinnedOpen()) {
     setMyLocationPanelOpen(true);
+  }
+})();
+
+// If cravings are pinned open via ?cr=1, open the card and hydrate selected tags.
+(function initCravingsFromQuery() {
+  if (!cravingsCard) return;
+
+  const initialTags = readCravingsFromUrl();
+  cravingsSelectedTags = new Set(initialTags);
+  cravingsAppliedTags = new Set(initialTags);
+  renderCravingsSelected();
+  syncCravingsApplyState();
+
+  if (isCravingsPinnedOpen()) {
+    setCravingsOpen(true);
   }
 })();
 

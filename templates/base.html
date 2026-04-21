@@ -165,6 +165,24 @@
         text-align: center;
         user-select: none;
       }
+
+      .sidebar-pill-btn {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+      }
+
+      .sidebar-pill-btn:hover {
+        background: rgba(255,255,255,.10);
+        border-color: rgba(255,255,255,.14);
+        color: var(--text);
+      }
+
+      .sidebar-pill-btn:focus-visible {
+        outline: none;
+        border-color: rgba(183, 144, 147, .45);
+        box-shadow: 0 0 0 3px rgba(183, 144, 147, .16);
+      }
       .sidebar-pill-link {
         cursor: pointer;
         text-decoration: none;
@@ -358,7 +376,7 @@
           My Location
         </button>
         <div class="sidebar-row">
-          <div class="sidebar-pill">Cravings</div>
+          <button type="button" class="sidebar-pill sidebar-pill-btn" id="cravingsButton" aria-label="Cravings" aria-pressed="false">Cravings</button>
           <a class="sidebar-pill sidebar-pill-link" href="{% url 'surprise_me' %}">Surprise Me</a>
         </div>
         <input
@@ -892,6 +910,28 @@
             } catch (e) {
               // fallback
               window.location.assign(window.location.pathname);
+            }
+          });
+        }
+
+        // Cravings: opens the right-side Cravings card on Feed.
+        const cravingsButton = document.getElementById('cravingsButton');
+        if (cravingsButton) {
+          cravingsButton.addEventListener('click', () => {
+            // If the current page implements the cravings panel, delegate.
+            if (typeof window.favesToggleCravingsPanel === 'function') {
+              window.favesToggleCravingsPanel();
+              return;
+            }
+
+            // Otherwise, go to the feed with the panel open.
+            try {
+              const url = new URL(window.location.origin + '{% url "feed" %}');
+              url.searchParams.set('cr', '1');
+              url.searchParams.set('ml', '1');
+              window.location.assign(url.toString());
+            } catch (e) {
+              window.location.assign('{% url "feed" %}?cr=1&ml=1');
             }
           });
         }

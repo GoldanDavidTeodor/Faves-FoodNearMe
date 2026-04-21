@@ -24,6 +24,12 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+# Some map tile providers (including OSM's public tile servers) may block
+# requests that omit a Referer header. Django's SecurityMiddleware can set a
+# strict Referrer-Policy; we explicitly choose a modern default that still
+# sends the Origin on cross-origin requests.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 
 # Application definition
 
