@@ -27,10 +27,10 @@
                 <button type="submit" class="btn btn-ghost">Follow</button>
               {% endif %}
             </form>
-            <a class="btn btn-ghost" href="{% url 'feed' %}">Random</a>
+            <button type="button" class="btn btn-ghost" id="profileRandomButton" aria-label="Open a random post">Random</button>
           {% endif %}
           {% if user.is_authenticated and user == profile_user %}
-            <a class="btn btn-ghost" href="{% url 'feed' %}">Random</a>
+            <button type="button" class="btn btn-ghost" id="profileRandomButton" aria-label="Open a random post">Random</button>
             <a class="btn btn-ghost" href="{% url 'edit_profile' %}">Edit</a>
           {% endif %}
         </div>

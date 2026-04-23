@@ -383,7 +383,9 @@
     min-width: 320px;
   }
   .feed-side.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
     position: fixed;
     top: 16px;
     bottom: 16px;
@@ -391,6 +393,18 @@
     /* Fill remaining space to the right of the feed column (without pushing posts). */
     width: clamp(360px, calc(100vw - 282px - 620px - 76px), 720px);
     z-index: 9;
+    overflow: hidden;
+  }
+
+  /* Make the Cravings card consume remaining sidebar height (scroll internally). */
+  #myLocationCard { flex: 0 0 auto; }
+  #cravingsCard { flex: 1 1 auto; min-height: 0; }
+  #cravingsCard .my-location-card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .my-location-card {
@@ -446,6 +460,25 @@
   }
   .cravings-input::placeholder { color: rgba(238,241,248,.5); }
 
+  /* Chrome/Edge: style the built-in clear (x) for the cravings search pill */
+  .cravings-input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    background-color: var(--brand);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20fill%3D'black'%20d%3D'M11.41%2010l4.3-4.29A1%201%200%201014.29%204.3L10%208.59%205.71%204.3A1%201%200%20104.3%205.71L8.59%2010l-4.3%204.29A1%201%200%20105.71%2015.7L10%2011.41l4.29%204.3a1%201%200%20001.42-1.42z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20fill%3D'black'%20d%3D'M11.41%2010l4.3-4.29A1%201%200%201014.29%204.3L10%208.59%205.71%204.3A1%201%200%20104.3%205.71L8.59%2010l-4.3%204.29A1%201%200%20105.71%2015.7L10%2011.41l4.29%204.3a1%201%200%20001.42-1.42z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    opacity: .85;
+    cursor: pointer;
+  }
+  .cravings-input[type="search"]::-webkit-search-cancel-button:hover { opacity: 1; }
+
   .cravings-apply {
     flex: 0 0 auto;
     width: 42px;
@@ -478,6 +511,10 @@
     background: rgba(0,0,0,.22);
   }
   .cravings-suggest.active { display: block; }
+  .cravings-suggest.active {
+    max-height: 180px;
+    overflow-y: auto;
+  }
   .cravings-suggest-item {
     width: 100%;
     border: 0;
@@ -490,7 +527,16 @@
   }
   .cravings-suggest-item:hover { background: rgba(255,255,255,.06); color: var(--text); }
 
-  .cravings-selected { display: flex; flex-wrap: wrap; gap: .45rem; }
+  .cravings-selected {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: .45rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
   .cravings-chip {
     border-radius: 999px;
     background: var(--brand-soft);
@@ -503,6 +549,27 @@
     user-select: none;
   }
   .cravings-chip:hover { border-color: rgba(255,255,255,.16); }
+
+  /* Keep the small custom scrollbar (only inside the cravings card) */
+  .cravings-selected,
+  .cravings-suggest.active {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--brand) transparent;
+  }
+  .cravings-selected::-webkit-scrollbar,
+  .cravings-suggest.active::-webkit-scrollbar { width: 8px; }
+  .cravings-selected::-webkit-scrollbar-track,
+  .cravings-suggest.active::-webkit-scrollbar-track { background: transparent; }
+  .cravings-selected::-webkit-scrollbar-thumb,
+  .cravings-suggest.active::-webkit-scrollbar-thumb {
+    background: var(--brand);
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14);
+  }
+  .cravings-selected::-webkit-scrollbar-thumb:hover,
+  .cravings-suggest.active::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--brand) 82%, #fff);
+  }
 
 
   .my-location-status {
@@ -686,7 +753,7 @@
     .feed-layout { display: block; }
     .feed-main { width: 100%; }
     .feed-side { width: 100%; flex: 0 0 auto; margin-bottom: 1.1rem; }
-    .feed-side.active { position: static; height: auto; width: 100%; }
+    .feed-side.active { position: static; height: auto; width: 100%; overflow: visible; }
   }
 
   /* =====================================================

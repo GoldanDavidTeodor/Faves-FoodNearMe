@@ -359,6 +359,33 @@ document.querySelectorAll('[data-post-card]').forEach(card => {
   });
 });
 
+// --- Profile: Random post ---
+(function initProfileRandomButton() {
+  const btn = document.getElementById('profileRandomButton');
+  if (!btn) return;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const postsPanel = document.querySelector('[data-profile-panel="posts"]');
+    const grid = postsPanel?.querySelector('.mini-grid');
+    const cards = Array.from(grid?.querySelectorAll('.mini-post-card') || []).filter(
+      (card) => (card instanceof HTMLElement ? card.style.display !== 'none' : true)
+    );
+
+    if (!cards.length) {
+      return;
+    }
+
+    // Ensure the Posts tab is active (so the URL reflects state).
+    setProfileTab('posts', { updateHash: true });
+
+    const card = cards[Math.floor(Math.random() * cards.length)];
+    // Let the tab switch render before opening.
+    setTimeout(() => openCommentModalFromCard(card), 0);
+  });
+})();
+
 function closeCommentModal() {
   commentModal.classList.remove('active');
   commentModal.setAttribute('aria-hidden', 'true');
