@@ -1,8 +1,5 @@
-/* Prevent page-level scrollbar on desktop; internal panes scroll instead */
 @media (min-width: 981px) {
   .main-content { height: 100vh; overflow: hidden; }
-  /* Left gap is already provided by the fixed sidebar (16px).
-     Keep right/top/bottom at 16px so spacing is equal. */
   .container { height: 100vh; overflow: hidden; padding: 1rem 1rem 1rem 0; max-width: none; }
 }
 
@@ -224,7 +221,6 @@
   padding-bottom: 0;
 }
 
-/* Time stays outside the pill (order handled in template) */
 .msg-line { flex-direction: row; }
 
 .date-separator {
@@ -240,7 +236,6 @@
   margin: .35rem 0;
 }
 
-/* Shared post (profile-style mini card) */
 .shared-post {
   max-width: min(520px, 86%);
 }

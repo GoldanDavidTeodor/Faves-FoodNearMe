@@ -152,7 +152,6 @@ def _get_feed_posts_queryset(*, has_location_filter, filter_lat, filter_lng, fil
     )
 
     if has_location_filter:
-        # Spherical law of cosines distance (km), clamped to avoid ACos domain errors.
         lat0 = Radians(Value(filter_lat))
         lng0 = Radians(Value(filter_lng))
         lat1 = Radians(F("lat"))
@@ -198,8 +197,6 @@ def feed(request):
         )
 
     if selected_tags:
-        # "Best match": require at least one selected tag, then order by how
-        # many selected tags each post has (descending).
         posts_qs = (
             posts_qs.annotate(
                 matched_tags_count=Count(

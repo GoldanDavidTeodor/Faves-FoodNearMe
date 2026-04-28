@@ -89,7 +89,6 @@
       .sidebar-divider { height: 1px; background: rgba(255,255,255,.10); margin: .75rem 0; }
       .sidebar-divider.tight { margin: .45rem 0 .65rem; }
 
-      /* Bottom "You" section (no card background) */
       .sidebar-you { margin-top: auto; padding-top: .25rem; }
       .sidebar-you-title { font-weight: 800; letter-spacing: .2px; color: rgba(255,255,255,.70); padding: .15rem .25rem; }
 
@@ -104,7 +103,6 @@
         height: 34px;
       }
 
-      /* Sidebar search: keep left-aligned, but vertically centered in the pill */
       #sidebarSearchInput {
         text-align: left;
         padding-top: 0;
@@ -112,7 +110,6 @@
         line-height: 34px;
       }
 
-      /* Chrome/Edge: style the built-in clear (x) for type=search */
       .sidebar-field[type="search"]::-webkit-search-cancel-button {
         -webkit-appearance: none;
         height: 14px;
@@ -256,10 +253,8 @@
       @media (max-width: 920px) {
         body {
           display: block;
-          /* Offset content under the fixed topbar */
           padding-top: 72px;
         }
-        /* Mobile: sidebar becomes a topbar with icon-only main nav + expandable "More" menu */
         .sidebar {
           position: fixed;
           top: 0;
@@ -285,7 +280,6 @@
         .sidebar-brand { display: none; }
 
         .sidebar-nav {
-          /* Equal-width icon slots so the row always fits (works for 5, 6, etc.) */
           display: grid;
           grid-auto-flow: column;
           grid-auto-columns: 1fr;
@@ -298,7 +292,6 @@
           justify-content: center;
           padding: .62rem 0;
           border-radius: 14px;
-          /* Ensure no text takes width in icon-only mode */
           font-size: 0;
           gap: 0;
           min-width: 44px;

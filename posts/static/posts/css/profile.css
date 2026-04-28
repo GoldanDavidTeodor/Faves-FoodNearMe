@@ -1,7 +1,5 @@
-/* Let the profile card fill the whole right side */
 .container { max-width: none; padding: 16px 16px 26px; }
 
-/* Profile page should not scroll at the page level */
 html, body { height: 100%; overflow: hidden; }
 .main-content { min-height: 100vh; overflow: hidden; }
 .container { height: 100vh; overflow: hidden; }
@@ -127,7 +125,6 @@ html, body { height: 100%; overflow: hidden; }
   background: rgba(0,0,0,.26);
 }
 
-/* Custom sort dropdown (native <select> can't fully style the open menu) */
 .profile-select {
   position: relative;
   min-width: 140px;
@@ -247,9 +244,8 @@ html, body { height: 100%; overflow: hidden; }
   overflow-y: auto;
 }
 
-/* Keep the small custom scrollbar (only inside the card) */
 .profile-tab-panels {
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: thin; 
   scrollbar-color: rgba(183, 144, 147, .62) transparent;
 }
 .profile-tab-panels::-webkit-scrollbar { width: 8px; }
@@ -366,7 +362,6 @@ html, body { height: 100%; overflow: hidden; }
 .mini-loc { margin-top: .35rem; display: inline-flex; align-items: center; gap: .35rem; color: rgba(238,241,248,.54); font-size: .76rem; font-weight: 750; }
 .mini-loc i { font-size: .95rem; }
 
-/* Rating modal */
 .rating-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
 .rating-modal-backdrop.active { display: flex; }
 .rating-modal { width: 100%; max-width: 380px; background: #161514; border-radius: 18px; box-shadow: 0 26px 72px rgba(0,0,0,.6); padding: 1rem; border: 1px solid rgba(255,255,255,.12); }
@@ -379,7 +374,6 @@ html, body { height: 100%; overflow: hidden; }
 .rating-modal-actions { margin-top: .85rem; display: flex; justify-content: flex-end; }
 .rating-cancel { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.88); border-radius: 12px; padding: .45rem .85rem; cursor: pointer; font-weight: 900; }
 
-/* Post modal (2.png) */
 .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
 .comment-modal-backdrop.active { display: flex; }
 .comment-modal {
