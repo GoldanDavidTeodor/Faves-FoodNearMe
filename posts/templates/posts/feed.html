@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Feed — Faves{% endblock %}
+{% block title %}{{ page_title|default:"Feed" }} — Faves{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -390,8 +390,9 @@
     top: 16px;
     bottom: 16px;
     right: 16px;
-    /* Fill remaining space to the right of the feed column (without pushing posts). */
-    width: clamp(360px, calc(100vw - 282px - 620px - 76px), 720px);
+    /* Keep constant right margin; expand to the left as the viewport grows. */
+    left: var(--feed-side-left, auto);
+    width: auto;
     z-index: 9;
     overflow: hidden;
   }
@@ -655,18 +656,32 @@
   .my-location-preset-select {
     width: 100%;
     border-radius: 12px;
+    min-height: 40px;
     padding: .62rem .85rem;
-    font-weight: 900;
+    font-weight: 850;
+    font-size: .98rem;
     border: 1px solid rgba(255,255,255,.12);
-    background: rgba(0,0,0,.22);
-    color: rgba(255,255,255,.90);
+    background: rgba(0,0,0,.34);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: rgba(255,255,255,.88);
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    color-scheme: dark;
   }
+  .my-location-preset-select:hover { background: rgba(0,0,0,.42); border-color: rgba(255,255,255,.18); }
+  .my-location-preset-select:focus { outline: none; }
   .my-location-preset-select:focus,
   .my-location-preset-select:focus-visible {
-    border-color: rgba(255,255,255,.30);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
+    outline: none;
+    border-color: color-mix(in srgb, var(--brand) 55%, rgba(255,255,255,.12));
+    box-shadow: 0 0 0 3px rgba(183, 144, 147, .18);
+  }
+  .my-location-preset-select option {
+    background: rgba(22, 21, 20, .96);
+    color: rgba(255,255,255,.88);
   }
 
   .preset-modal-backdrop {
@@ -753,7 +768,7 @@
     .feed-layout { display: block; }
     .feed-main { width: 100%; }
     .feed-side { width: 100%; flex: 0 0 auto; margin-bottom: 1.1rem; }
-    .feed-side.active { position: static; height: auto; width: 100%; overflow: visible; }
+    .feed-side.active { position: static; height: auto; width: 100%; overflow: visible; left: auto; right: auto; top: auto; bottom: auto; }
   }
 
   /* =====================================================
@@ -967,7 +982,7 @@
           {% if user.is_authenticated %}
             <form method="post" action="{% url 'post_report' post.id %}" style="margin:0;">
               {% csrf_token %}
-              <input type="hidden" name="next" value="{% url 'feed' %}">
+              <input type="hidden" name="next" value="{{ next_url }}">
               <button type="submit" class="post-menu-item danger" role="menuitem">Report post</button>
             </form>
           {% else %}
@@ -1013,7 +1028,7 @@
           {% if user.is_authenticated %}
           <form method="post" action="{% url 'post_like' post.id %}" style="display:inline;">
             {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'feed' %}">
+            <input type="hidden" name="next" value="{{ next_url }}">
             <button type="submit" class="action-btn {% if post.id in liked_ids %}liked{% endif %}">
               <i class="ci-Heart_01"></i>
             </button>
@@ -1039,7 +1054,7 @@
           {% if user.is_authenticated %}
           <form method="post" action="{% url 'post_rate' post.id %}" style="display:inline;" data-rate-form>
             {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'feed' %}">
+            <input type="hidden" name="next" value="{{ next_url }}">
             <input type="hidden" name="rating" value="{{ post.current_user_rating|default_if_none:'' }}">
             <button type="button" class="action-btn {% if post.current_user_rating %}rated{% endif %}" data-rate-trigger data-current-rating="{{ post.current_user_rating|default_if_none:'' }}">
               <i class="ci-Cookie"></i>
@@ -1089,7 +1104,7 @@
                     {% if user.is_authenticated %}
                     <form method="post" action="{% url 'comment_like' comment.id %}" class="comment-like-form">
                       {% csrf_token %}
-                      <input type="hidden" name="next" value="{% url 'feed' %}">
+                      <input type="hidden" name="next" value="{{ next_url }}">
                       <button type="submit" class="comment-like-btn {% if comment.current_user_liked %}liked{% endif %}" aria-label="Like comment">
                         <i class="ci-Heart_01"></i>
                       </button>
@@ -1133,7 +1148,7 @@
         {% if user.is_authenticated %}
         <form class="comment-form" method="post" action="{% url 'post_comment' post.id %}">
           {% csrf_token %}
-          <input type="hidden" name="next" value="{% url 'feed' %}">
+          <input type="hidden" name="next" value="{{ next_url }}">
           <input type="hidden" name="parent_id" value="" data-reply-parent-input>
           <div class="replying-hint" data-replying-hint>
             <span>Replying to <strong data-replying-user></strong></span>
@@ -1172,7 +1187,7 @@
                     {% if user.is_authenticated %}
                     <form method="post" action="{% url 'comment_like' comment.id %}" class="comment-like-form">
                       {% csrf_token %}
-                      <input type="hidden" name="next" value="{% url 'feed' %}">
+                      <input type="hidden" name="next" value="{{ next_url }}">
                       <button type="submit" class="comment-like-btn {% if comment.current_user_liked %}liked{% endif %}" aria-label="Like comment"><i class="ci-Heart_01"></i></button>
                     </form>
                     {% else %}
@@ -1234,7 +1249,7 @@
             {% if user.is_authenticated %}
             <button type="button" class="btn btn-secondary my-location-apply" id="createLocationPreset" style="margin-top: .65rem;">Create preset</button>
             <select class="my-location-preset-select" id="myLocationPresetSelect" aria-label="Location presets" style="margin-top: .55rem;">
-              <option value="">Select a preset</option>
+              <option value="" selected disabled hidden>Select a preset</option>
             </select>
             {% endif %}
 
@@ -1472,7 +1487,7 @@
       {% if user.is_authenticated %}
       <form class="comment-form" id="commentModalForm" method="post" action="">
         {% csrf_token %}
-        <input type="hidden" name="next" value="{% url 'feed' %}">
+        <input type="hidden" name="next" value="{{ next_url }}">
         <input type="hidden" name="parent_id" value="" id="commentModalParentId">
         <div class="replying-hint" data-replying-hint>
           <span>Replying to <strong data-replying-user></strong></span>
@@ -1497,6 +1512,33 @@
 const initializedMaps = {};
 let modalMap = null;
 let modalMarker = null;
+
+function syncFeedSideLeft() {
+  const side = document.getElementById('myLocationSide');
+  const main = document.querySelector('.feed-main');
+  const layout = document.querySelector('.feed-layout');
+  if (!side || !main || !layout) return;
+  if (!side.classList.contains('active')) return;
+
+  const mainRect = main.getBoundingClientRect();
+  const sidebar = document.querySelector('.sidebar');
+
+  // Match the right-side gap to the same gap used between the left sidebar and the feed.
+  let gapPx = 0;
+  if (sidebar) {
+    const sidebarRect = sidebar.getBoundingClientRect();
+    gapPx = Math.max(0, mainRect.left - sidebarRect.right);
+  } else {
+    // Fallback (mobile / no sidebar): use the declared feed layout gap.
+    const gapValue = getComputedStyle(layout).gap || '0px';
+    gapPx = Number.parseFloat(gapValue) || 0;
+  }
+
+  const leftPx = Math.round(mainRect.right + gapPx);
+  side.style.setProperty('--feed-side-left', `${leftPx}px`);
+}
+
+window.addEventListener('resize', syncFeedSideLeft, { passive: true });
 
 // --- REPLIES TOGGLE LOGIC (Event Delegation Corectat) ---
 document.addEventListener('click', function(e) {
@@ -1833,7 +1875,7 @@ function renderMyLocationPresets() {
   if (!select) return;
 
   const currentValue = select.value;
-  select.innerHTML = '<option value="">Select a preset</option>';
+  select.innerHTML = '<option value="" selected disabled hidden>Select a preset</option>';
   myLocationPresets.forEach((p) => {
     const opt = document.createElement('option');
     opt.value = String(p.id);
@@ -2170,6 +2212,7 @@ function setMyLocationPanelOpen(isOpen) {
   setMyLocationPanelPinnedOpen(isOpen);
 
   if (isOpen) {
+    syncFeedSideLeft();
     setRangeLabel();
     ensureMyLocationMap();
     renderMyLocationStatus();
@@ -2178,6 +2221,7 @@ function setMyLocationPanelOpen(isOpen) {
     }
     // Leaflet needs a resize once visible.
     setTimeout(() => myLocationMap?.invalidateSize(), 60);
+    setTimeout(syncFeedSideLeft, 80);
   }
 }
 

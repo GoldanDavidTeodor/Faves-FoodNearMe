@@ -1,4 +1,5 @@
 import random
+import math
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
@@ -248,6 +249,8 @@ def feed(request):
         followers = _get_followers_for_user(request.user)
 
     return render(request, "posts/feed.html", {
+        "page_title": "Feed",
+        "next_url": request.get_full_path(),
         "posts": posts,
         "liked_ids": liked_ids,
         "followers": followers,
@@ -260,6 +263,170 @@ def feed(request):
         },
         "selected_tags": selected_tags,
     })
+
+
+def _haversine_km(lat1, lng1, lat2, lng2):
+    """Great-circle distance (km) between two lat/lng points."""
+    try:
+        lat1 = float(lat1)
+        lng1 = float(lng1)
+        lat2 = float(lat2)
+        lng2 = float(lng2)
+    except (TypeError, ValueError):
+        return None
+
+    r = 6371.0
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lng2 - lng1)
+
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return r * c
+
+
+def _build_for_you_user_signals(user):
+    """Return (tag_affinity, own_tags_set, following_ids, reference_location)."""
+    now = timezone.now()
+
+    following_ids = set(
+        Follow.objects.filter(follower=user).values_list("following_id", flat=True)
+    )
+
+    # Tag affinity from the user's ratings (recently updated ratings matter more).
+    tag_affinity = {}
+    rated = (
+        Rating.objects.filter(user=user)
+        .select_related("post")
+        .prefetch_related("post__tags")
+        .order_by("-updated_at")[:500]
+    )
+
+    for rating in rated:
+        age_days = max(0.0, (now - rating.updated_at).total_seconds() / 86400.0)
+        recency = 0.985 ** age_days
+        # Map 1..10 to roughly -1..+1 (neutral around ~5.5).
+        centered = (float(rating.value) - 5.5) / 4.5
+        for tag in rating.post.tags.all():
+            tag_affinity[tag.name] = tag_affinity.get(tag.name, 0.0) + centered * recency
+
+    # Tags the user has posted about themselves (positive signal).
+    own_tags_set = set()
+    own_posts = (
+        Post.objects.filter(user=user)
+        .prefetch_related("tags")
+        .order_by("-created_at")[:120]
+    )
+    for post in own_posts:
+        age_days = max(0.0, (now - post.created_at).total_seconds() / 86400.0)
+        recency = 0.99 ** age_days
+        for tag in post.tags.all():
+            own_tags_set.add(tag.name)
+            tag_affinity[tag.name] = tag_affinity.get(tag.name, 0.0) + 0.35 * recency
+
+    # Reference location: use latest preset if available.
+    reference_lat = None
+    reference_lng = None
+    latest_preset = (
+        LocationPreset.objects.filter(user=user)
+        .order_by("-created_at", "-id")
+        .values("lat", "lng")
+        .first()
+    )
+    if latest_preset:
+        try:
+            reference_lat = float(latest_preset["lat"])
+            reference_lng = float(latest_preset["lng"])
+        except (TypeError, ValueError):
+            reference_lat = None
+            reference_lng = None
+
+    return tag_affinity, own_tags_set, following_ids, (reference_lat, reference_lng)
+
+
+def _score_for_you_post(
+    *,
+    post,
+    tag_affinity,
+    own_tags_set,
+    following_ids,
+    reference_location,
+    user_rating_value=None,
+):
+    """Compute a weighted score for a post for For You ranking."""
+    # Tunable weights.
+    W_TAG = 4.0
+    W_FOLLOW = 1.8
+    W_DISTANCE = 2.2
+    W_OWN_OVERLAP = 1.2
+    W_QUALITY = 0.7
+    W_FRESH = 0.35
+    W_USER_RATING = 12.0
+
+    tags = [t.name for t in post.tags.all()]
+
+    # Tag affinity (normalized so many tags don't dominate).
+    tag_component = 0.0
+    if tags:
+        for name in tags:
+            tag_component += float(tag_affinity.get(name, 0.0))
+        tag_component = tag_component / math.sqrt(len(tags))
+
+    follow_component = 1.0 if post.user_id in following_ids else 0.0
+
+    own_overlap_component = 0.0
+    if own_tags_set and tags:
+        tag_set = set(tags)
+        if tag_set:
+            own_overlap_component = len(tag_set & own_tags_set) / len(tag_set)
+
+    distance_component = 0.0
+    ref_lat, ref_lng = reference_location
+    if ref_lat is not None and ref_lng is not None and post.lat is not None and post.lng is not None:
+        dist_km = _haversine_km(ref_lat, ref_lng, post.lat, post.lng)
+        if dist_km is not None:
+            # 1.0 when very close, 0.0 around 25km+ (tunable).
+            distance_component = max(0.0, 1.0 - (dist_km / 25.0))
+
+    quality_component = 0.0
+    if getattr(post, "avg_rating", None) is not None:
+        avg = float(post.avg_rating)
+        avg_norm = max(0.0, min(1.0, (avg - 1.0) / 9.0))
+        cnt = float(getattr(post, "ratings_count", 0) or 0)
+        confidence = max(0.0, min(1.0, math.log1p(cnt) / math.log1p(20.0)))
+        quality_component = avg_norm * confidence
+
+    fresh_component = 0.0
+    if getattr(post, "created_at", None) is not None:
+        age_days = max(0.0, (timezone.now() - post.created_at).total_seconds() / 86400.0)
+        fresh_component = math.exp(-age_days / 14.0)
+
+    user_rating_component = 0.0
+    if user_rating_value is not None:
+        try:
+            user_rating_value = int(user_rating_value)
+        except (TypeError, ValueError):
+            user_rating_value = None
+
+    if user_rating_value is not None:
+        # Hard suppression: if the user disliked it, it shouldn't be recommended.
+        if user_rating_value <= 3:
+            return -1_000_000.0
+        # Map 1..10 to roughly -1..+1 (neutral around ~5.5).
+        centered = (float(user_rating_value) - 5.5) / 4.5
+        user_rating_component = centered
+
+    score = (
+        W_TAG * tag_component
+        + W_FOLLOW * follow_component
+        + W_DISTANCE * distance_component
+        + W_OWN_OVERLAP * own_overlap_component
+        + W_QUALITY * quality_component
+        + W_FRESH * fresh_component
+        + W_USER_RATING * user_rating_component
+    )
+    return score
 
 
 @require_GET
@@ -306,7 +473,116 @@ def surprise_me(request):
 
 
 def for_you(request):
-    return render(request, "posts/for_you.html")
+    selected_tags = _parse_feed_tags_filter(request)
+
+    # Optional location filter via query params (same as Feed). If present, use it as the reference
+    # point AND filter candidates to the range.
+    has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
+    posts_qs = _get_feed_posts_queryset(
+        has_location_filter=has_location_filter,
+        filter_lat=filter_lat,
+        filter_lng=filter_lng,
+        filter_range_km=filter_range_km,
+    )
+
+    # If tags are explicitly selected, keep only posts that match.
+    if selected_tags:
+        posts_qs = (
+            posts_qs.annotate(
+                matched_tags_count=Count(
+                    "tags",
+                    filter=Q(tags__name__in=selected_tags),
+                    distinct=True,
+                )
+            )
+            .filter(matched_tags_count__gt=0)
+        )
+
+    if request.user.is_authenticated:
+        posts_qs = posts_qs.exclude(reports__reporter=request.user)
+
+    # Candidate pool.
+    candidates = list(posts_qs.order_by("-created_at", "-id")[:450])
+
+    if request.user.is_authenticated and candidates:
+        tag_affinity, own_tags_set, following_ids, preset_reference = _build_for_you_user_signals(request.user)
+        reference_location = (
+            (filter_lat, filter_lng) if has_location_filter else preset_reference
+        )
+
+        user_ratings_by_post_id = dict(
+            Rating.objects.filter(
+                user=request.user,
+                post_id__in=[p.id for p in candidates],
+            ).values_list("post_id", "value")
+        )
+
+        scored = []
+        for post in candidates:
+            s = _score_for_you_post(
+                post=post,
+                tag_affinity=tag_affinity,
+                own_tags_set=own_tags_set,
+                following_ids=following_ids,
+                reference_location=reference_location,
+                user_rating_value=user_ratings_by_post_id.get(post.id),
+            )
+            scored.append((s, post.created_at, post.id, post))
+
+        scored.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
+        posts = [row[3] for row in scored[:50]]
+    else:
+        # Not logged in: fall back to a simple feed-like ordering.
+        posts = candidates[:50]
+
+    liked_ids = set()
+    if request.user.is_authenticated and posts:
+        liked_ids = set(
+            Like.objects.filter(user=request.user, post__in=posts)
+            .values_list("post_id", flat=True)
+        )
+
+    _attach_current_user_ratings(posts, request.user)
+    _attach_current_user_comment_likes(posts, request.user)
+    _attach_comment_threads(posts)
+
+    post_locations = []
+    for post in posts:
+        if post.lat is None or post.lng is None:
+            continue
+        try:
+            lat = float(post.lat)
+            lng = float(post.lng)
+        except (TypeError, ValueError):
+            continue
+
+        post_locations.append({
+            "id": post.id,
+            "title": post.title,
+            "username": post.user.username,
+            "lat": lat,
+            "lng": lng,
+        })
+
+    followers = []
+    if request.user.is_authenticated:
+        followers = _get_followers_for_user(request.user)
+
+    return render(request, "posts/feed.html", {
+        "page_title": "For You",
+        "next_url": request.get_full_path(),
+        "posts": posts,
+        "liked_ids": liked_ids,
+        "followers": followers,
+        "post_locations": post_locations,
+        "location_filter": {
+            "active": has_location_filter,
+            "lat": filter_lat,
+            "lng": filter_lng,
+            "range_km": filter_range_km,
+        },
+        "selected_tags": selected_tags,
+    })
 
 
 @login_required
