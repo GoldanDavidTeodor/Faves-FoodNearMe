@@ -443,6 +443,41 @@ def tag_suggest(request):
     return JsonResponse({"tags": tags})
 
 
+@require_GET
+def tag_popular(request):
+    """Return all-time most-used tags (by number of distinct posts)."""
+    tags = list(
+        Tag.objects.all()
+        .annotate(posts_count=Count("posts", distinct=True))
+        .order_by("-posts_count", "name")
+        .values_list("name", flat=True)[:12]
+    )
+    return JsonResponse({"tags": tags})
+
+
+@require_GET
+def tag_hot(request):
+    """Return tags used most on posts within the last N days."""
+    raw_days = (request.GET.get("days") or "").strip()
+    try:
+        days = int(raw_days) if raw_days else 14
+    except ValueError:
+        days = 14
+
+    days = max(1, min(90, days))
+    since = timezone.now() - timedelta(days=days)
+
+    tags_qs = (
+        Tag.objects.filter(posts__created_at__gte=since)
+        .annotate(posts_count=Count("posts", filter=Q(posts__created_at__gte=since), distinct=True))
+        .filter(posts_count__gt=0)
+        .order_by("-posts_count", "name")
+    )
+
+    tags = list(tags_qs.values_list("name", flat=True)[:12])
+    return JsonResponse({"tags": tags, "days": days})
+
+
 def surprise_me(request):
     """Redirect to the feed anchored on a random post card."""
     has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)

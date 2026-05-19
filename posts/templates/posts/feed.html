@@ -153,6 +153,8 @@
 
   .post-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0 .25rem; }
   .post-tag {
+    appearance: none;
+    -webkit-appearance: none;
     background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.10);
     color: rgba(255,255,255,.78);
@@ -161,11 +163,48 @@
     font-size: .75rem;
     font-weight: 850;
     line-height: 1.2;
+    font-family: inherit;
+    cursor: pointer;
   }
 
-  .rating-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
-  .rating-modal-backdrop.active { display: flex; }
-  .rating-modal { width: 100%; max-width: 380px; background: rgba(18, 20, 28, .92); border-radius: 18px; box-shadow: 0 26px 72px rgba(0,0,0,.6); padding: 1rem; border: 1px solid rgba(255,255,255,.12); }
+  .rating-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 10, 14, .72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, visibility 0s linear .16s;
+  }
+  .rating-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease;
+  }
+  .rating-modal {
+    width: 100%;
+    max-width: 380px;
+    background: rgba(18, 20, 28, .92);
+    border-radius: 18px;
+    box-shadow: 0 26px 72px rgba(0,0,0,.6);
+    padding: 1rem;
+    border: 1px solid rgba(255,255,255,.12);
+    opacity: 0;
+    transform: translateY(10px) scale(.985);
+    transition: opacity .20s cubic-bezier(.2, .9, .2, 1), transform .20s cubic-bezier(.2, .9, .2, 1);
+  }
+  .rating-modal-backdrop.active .rating-modal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
   .rating-modal h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
   .rating-modal p { margin: 0 0 .8rem; color: rgba(255,255,255,.62); font-size: .9rem; font-weight: 650; }
   .rating-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .45rem; }
@@ -175,8 +214,28 @@
   .rating-modal-actions { margin-top: .85rem; display: flex; justify-content: flex-end; }
   .rating-cancel { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.88); border-radius: 12px; padding: .45rem .85rem; cursor: pointer; font-weight: 900; }
 
-  .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
-  .comment-modal-backdrop.active { display: flex; }
+  .comment-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1600;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, visibility 0s linear .16s;
+  }
+  .comment-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease;
+  }
   
   /* ==========================================
      MODAL REDESIGN - ALINIERE ȘI CULORI
@@ -395,6 +454,13 @@
     width: auto;
     z-index: 9;
     overflow: hidden;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .feed-side.active.closing {
+    opacity: 0;
+    transform: translateY(8px);
   }
 
   /* Make the Cravings card consume remaining sidebar height (scroll internally). */
@@ -418,6 +484,8 @@
     display: flex;
     flex-direction: column;
   }
+  #myLocationCard.is-hidden { display: none; }
+  #myLocationCard.is-hidden + #cravingsCard { margin-top: 0; }
   .my-location-card-header {
     padding: .95rem 1rem .7rem;
     border-bottom: 1px solid rgba(255,255,255,.10);
@@ -442,7 +510,16 @@
 
   /* Cravings card (below My Location) */
   .cravings-card { display: none; margin-top: .9rem; }
-  .cravings-card.active { display: flex; }
+  .cravings-card.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .cravings-card.active.closing {
+    opacity: 0;
+    transform: translateY(6px);
+  }
   .cravings-input-row {
     display: flex;
     align-items: center;
@@ -504,6 +581,40 @@
     cursor: not-allowed;
   }
 
+  /* Popular/Hot container under the cravings search */
+  .cravings-trends {
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    background: rgba(0,0,0,.16);
+    padding: .7rem .75rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .85rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+  }
+  .cravings-trends-title {
+    font-size: .78rem;
+    font-weight: 950;
+    color: rgba(255,255,255,.78);
+    margin-bottom: .4rem;
+  }
+  .cravings-trends-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+  }
+  .cravings-trends-empty {
+    font-size: .8rem;
+    font-weight: 800;
+    color: rgba(255,255,255,.55);
+  }
+
+  @media (max-width: 420px) {
+    .cravings-trends { grid-template-columns: 1fr; }
+  }
+
   .cravings-suggest {
     display: none;
     border: 1px solid rgba(255,255,255,.10);
@@ -533,11 +644,17 @@
     flex-wrap: wrap;
     align-content: flex-start;
     gap: .45rem;
+  }
+  .cravings-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     padding-right: 2px;
   }
+  /* (Popular/Hot styles live in .cravings-trends) */
   .cravings-chip {
     border-radius: 999px;
     background: var(--brand-soft);
@@ -552,22 +669,22 @@
   .cravings-chip:hover { border-color: rgba(255,255,255,.16); }
 
   /* Keep the small custom scrollbar (only inside the cravings card) */
-  .cravings-selected,
+  .cravings-scroll,
   .cravings-suggest.active {
     scrollbar-width: thin; /* Firefox */
     scrollbar-color: var(--brand) transparent;
   }
-  .cravings-selected::-webkit-scrollbar,
+  .cravings-scroll::-webkit-scrollbar,
   .cravings-suggest.active::-webkit-scrollbar { width: 8px; }
-  .cravings-selected::-webkit-scrollbar-track,
+  .cravings-scroll::-webkit-scrollbar-track,
   .cravings-suggest.active::-webkit-scrollbar-track { background: transparent; }
-  .cravings-selected::-webkit-scrollbar-thumb,
+  .cravings-scroll::-webkit-scrollbar-thumb,
   .cravings-suggest.active::-webkit-scrollbar-thumb {
     background: var(--brand);
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,.14);
   }
-  .cravings-selected::-webkit-scrollbar-thumb:hover,
+  .cravings-scroll::-webkit-scrollbar-thumb:hover,
   .cravings-suggest.active::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--brand) 82%, #fff);
   }
@@ -690,17 +807,33 @@
     background: rgba(8, 10, 14, .72);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1700;
     padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, visibility 0s linear .16s;
   }
-  .preset-modal-backdrop.active { display: flex; }
+  .preset-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease;
+  }
   .preset-modal {
     width: min(520px, 100%);
     padding: 0;
     overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px) scale(.985);
+    transition: opacity .20s cubic-bezier(.2, .9, .2, 1), transform .20s cubic-bezier(.2, .9, .2, 1);
+  }
+  .preset-modal-backdrop.active .preset-modal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
   .preset-modal-head {
     padding: 1rem 1.05rem;
@@ -774,8 +907,28 @@
   /* =====================================================
      Profile-style comment modal (shared with profile page)
      ===================================================== */
-  .comment-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
-  .comment-modal-backdrop.active { display: flex; }
+  .comment-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 10, 14, .72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1600;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, visibility 0s linear .16s;
+  }
+  .comment-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease;
+  }
   .comment-modal {
     width: min(1320px, 100%);
     height: min(760px, 92vh);
@@ -786,6 +939,24 @@
     background: #161514;
     border: 1px solid rgba(255,255,255,.12);
     box-shadow: 0 32px 88px rgba(0,0,0,.55);
+    opacity: 0;
+    transform: translateY(10px) scale(.988);
+    transition: opacity .22s cubic-bezier(.2, .9, .2, 1), transform .22s cubic-bezier(.2, .9, .2, 1);
+  }
+  .comment-modal-backdrop.active .comment-modal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Share modal uses .comment-modal-backdrop with a direct .card child */
+  .comment-modal-backdrop > .card {
+    opacity: 0;
+    transform: translateY(10px) scale(.985);
+    transition: opacity .20s cubic-bezier(.2, .9, .2, 1), transform .20s cubic-bezier(.2, .9, .2, 1);
+  }
+  .comment-modal-backdrop.active > .card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
   .comment-modal-left { background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; min-height: 0; }
   .modal-tab-panel { flex: 1; min-height: 0; display: flex; min-width: 0; }
@@ -953,6 +1124,15 @@
     .comment-modal { grid-template-columns: 1fr; height: min(860px, 94vh); }
     .comment-modal-left { max-height: 44vh; }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -1063,7 +1243,11 @@
           {% else %}
           <span class="action-btn"><i class="ci-Cookie"></i></span>
           {% endif %}
-          {% if post.ratings_count %}<span class="count rating-count">{{ post.avg_rating|floatformat:1 }} ({{ post.ratings_count }})</span>{% endif %}
+          <span
+            class="count rating-count"
+            data-rating-count="{{ post.id }}"
+            {% if not post.ratings_count %}style="display:none;"{% endif %}
+          >{{ post.avg_rating|floatformat:1 }} ({{ post.ratings_count }})</span>
         </div>
       </div>
 
@@ -1073,7 +1257,12 @@
         {% if tags %}
           <div class="post-tags" aria-label="Post tags">
             {% for tag in tags %}
-              <span class="post-tag">#{{ tag.name }}</span>
+              <button
+                type="button"
+                class="post-tag"
+                data-cravings-seed="{{ tag.name }}"
+                aria-label="Search cravings for #{{ tag.name }}"
+              >#{{ tag.name }}</button>
             {% endfor %}
           </div>
         {% endif %}
@@ -1292,7 +1481,24 @@
           <button type="button" class="cravings-apply" id="cravingsApply" aria-label="Apply cravings">&gt;</button>
         </div>
         <div class="cravings-suggest" id="cravingsSuggest" aria-label="Hashtag suggestions"></div>
-        <div class="cravings-selected" id="cravingsSelected" aria-label="Selected cravings"></div>
+        <div class="cravings-scroll" id="cravingsScroll" aria-label="Cravings tags">
+          <div class="cravings-selected" id="cravingsSelected" aria-label="Selected cravings"></div>
+
+          <div class="cravings-trends" id="cravingsTrends" aria-label="Popular and hot hashtags">
+            <div class="cravings-trends-col" aria-label="Popular hashtags">
+              <div class="cravings-trends-title">Popular</div>
+              <div class="cravings-trends-tags" id="cravingsPopularTags">
+                <div class="cravings-trends-empty">Loading…</div>
+              </div>
+            </div>
+            <div class="cravings-trends-col" aria-label="Hot hashtags">
+              <div class="cravings-trends-title">Hot</div>
+              <div class="cravings-trends-tags" id="cravingsHotTags">
+                <div class="cravings-trends-empty">Loading…</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </aside>
@@ -1814,22 +2020,98 @@ document.addEventListener('keydown', (event) => {
 
 // --- Rating Modal Logic ---
 let activeRateForm = null;
+let activeRateTrigger = null;
 const ratingModal = document.getElementById('ratingModal');
 document.querySelectorAll('[data-rate-trigger]').forEach(btn => {
   btn.addEventListener('click', () => {
     activeRateForm = btn.closest('[data-rate-form]');
+    activeRateTrigger = btn;
+    // highlight current rating
+    const currentValue = (activeRateForm?.querySelector('input[name="rating"]')?.value || btn.dataset.currentRating || '').trim();
+    document.querySelectorAll('.rating-choice').forEach(choice => {
+      choice.classList.toggle('active', String(choice.dataset.value) === String(currentValue));
+    });
     ratingModal.classList.add('active');
+    ratingModal.setAttribute('aria-hidden', 'false');
   });
 });
 document.querySelectorAll('.rating-choice').forEach(choice => {
   choice.addEventListener('click', () => {
-    if(activeRateForm) {
-      activeRateForm.querySelector('input[name="rating"]').value = choice.dataset.value;
-      activeRateForm.submit();
-    }
+    if (!activeRateForm) return;
+
+    const ratingInput = activeRateForm.querySelector('input[name="rating"]');
+    if (!ratingInput) return;
+    ratingInput.value = choice.dataset.value;
+
+    const body = new FormData(activeRateForm);
+    fetch(activeRateForm.action, {
+      method: 'POST',
+      body,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin'
+    })
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then((payload) => {
+        if (!payload || String(payload.post_id || '') === '') {
+          return;
+        }
+
+        const updatedRating = payload.current_user_rating;
+        if (activeRateTrigger) {
+          if (updatedRating) {
+            activeRateTrigger.classList.add('rated');
+            activeRateTrigger.dataset.currentRating = String(updatedRating);
+          } else {
+            activeRateTrigger.classList.remove('rated');
+            activeRateTrigger.dataset.currentRating = '';
+          }
+        }
+
+        const actionGroup = activeRateForm.closest('.action-group');
+        const countEl = actionGroup ? actionGroup.querySelector('.rating-count') : null;
+        const count = Number(payload.ratings_count || 0);
+        const avg = (typeof payload.avg_rating === 'number') ? payload.avg_rating : Number.parseFloat(payload.avg_rating);
+
+        if (countEl) {
+          if (count > 0 && Number.isFinite(avg)) {
+            countEl.textContent = `${avg.toFixed(1)} (${count})`;
+            countEl.style.display = '';
+          } else {
+            countEl.textContent = '';
+            countEl.style.display = 'none';
+          }
+        }
+
+        closeRatingModal();
+      })
+      .catch(() => {
+        // keep modal open on failure
+      });
   });
 });
-document.getElementById('ratingCancel').addEventListener('click', () => ratingModal.classList.remove('active'));
+
+function closeRatingModal() {
+  ratingModal.classList.remove('active');
+  ratingModal.setAttribute('aria-hidden', 'true');
+  activeRateForm = null;
+  activeRateTrigger = null;
+}
+
+document.getElementById('ratingCancel').addEventListener('click', closeRatingModal);
+
+ratingModal.addEventListener('click', (e) => {
+  if (e.target === ratingModal) {
+    closeRatingModal();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && ratingModal.classList.contains('active')) {
+    closeRatingModal();
+  }
+});
 
 document.querySelectorAll('[data-comment-toggle]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1847,6 +2129,8 @@ let nearbyPostsLayer = null;
 
 const locationPresetsUrl = "{% url 'location_presets' %}";
 const tagSuggestUrl = "{% url 'tag_suggest' %}";
+const popularTagsUrl = "{% url 'tag_popular' %}";
+const hotTagsUrl = "{% url 'tag_hot' %}";
 let myLocationPresets = [];
 let hasLoadedMyLocationPresets = false;
 
@@ -2198,21 +2482,70 @@ function updateMyLocationCircleRadius() {
   renderNearbyPostMarkers();
 }
 
-function setMyLocationPanelOpen(isOpen) {
-  const side = document.getElementById('myLocationSide');
-  const btn = document.getElementById('myLocationButton');
+const myLocationSideEl = document.getElementById('myLocationSide');
+const myLocationCardEl = document.getElementById('myLocationCard');
+let myLocationPanelOpenState = false;
 
+function syncMyLocationCardVisibility() {
+  if (!myLocationCardEl) return;
+  myLocationCardEl.classList.toggle('is-hidden', !myLocationPanelOpenState);
+}
+
+function setFeedSideOpen(isOpen) {
+  const side = myLocationSideEl;
   if (!side) return;
 
-  side.classList.toggle('active', isOpen);
-  side.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-  if (btn) btn.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+  // Allow a short fade-out before hiding the panel.
+  if (!window.__favesMyLocationCloseTimer) {
+    window.__favesMyLocationCloseTimer = null;
+  }
 
-  // Persist panel open state so it doesn't collapse on navigation.
-  setMyLocationPanelPinnedOpen(isOpen);
+  if (window.__favesMyLocationCloseTimer) {
+    clearTimeout(window.__favesMyLocationCloseTimer);
+    window.__favesMyLocationCloseTimer = null;
+  }
 
   if (isOpen) {
+    side.classList.remove('closing');
+    side.classList.add('active');
+    side.setAttribute('aria-hidden', 'false');
     syncFeedSideLeft();
+    setTimeout(syncFeedSideLeft, 80);
+    return;
+  }
+
+  // If it was never open, just ensure it's closed.
+  if (!side.classList.contains('active')) {
+    side.classList.remove('closing');
+    side.setAttribute('aria-hidden', 'true');
+    return;
+  }
+
+  side.classList.add('closing');
+  side.setAttribute('aria-hidden', 'true');
+  window.__favesMyLocationCloseTimer = setTimeout(() => {
+    side.classList.remove('active');
+    side.classList.remove('closing');
+    window.__favesMyLocationCloseTimer = null;
+  }, 190);
+}
+
+function setMyLocationPanelOpen(isOpen) {
+  const btn = document.getElementById('myLocationButton');
+
+  myLocationPanelOpenState = !!isOpen;
+  if (btn) btn.setAttribute('aria-pressed', myLocationPanelOpenState ? 'true' : 'false');
+
+  // Persist only the My Location open state.
+  setMyLocationPanelPinnedOpen(myLocationPanelOpenState);
+
+  syncMyLocationCardVisibility();
+  syncTrends();
+
+  const shouldOpenSide = myLocationPanelOpenState || (cravingsCard && cravingsCard.classList.contains('active'));
+  setFeedSideOpen(shouldOpenSide);
+
+  if (myLocationPanelOpenState) {
     setRangeLabel();
     ensureMyLocationMap();
     renderMyLocationStatus();
@@ -2221,7 +2554,6 @@ function setMyLocationPanelOpen(isOpen) {
     }
     // Leaflet needs a resize once visible.
     setTimeout(() => myLocationMap?.invalidateSize(), 60);
-    setTimeout(syncFeedSideLeft, 80);
   }
 }
 
@@ -2230,6 +2562,9 @@ const cravingsCard = document.getElementById('cravingsCard');
 const cravingsInput = document.getElementById('cravingsInput');
 const cravingsSuggest = document.getElementById('cravingsSuggest');
 const cravingsSelected = document.getElementById('cravingsSelected');
+const cravingsTrends = document.getElementById('cravingsTrends');
+const cravingsPopularTags = document.getElementById('cravingsPopularTags');
+const cravingsHotTags = document.getElementById('cravingsHotTags');
 const cravingsApply = document.getElementById('cravingsApply');
 const cravingsBtn = document.getElementById('cravingsButton');
 
@@ -2237,10 +2572,111 @@ let cravingsSelectedTags = new Set();
 let cravingsAppliedTags = new Set();
 let cravingsSuggestTimer = null;
 
+const HOT_TAGS_DAYS = 14;
+let trendsCache = null; // { ts: number, popular: string[], hot: string[] }
+let trendsInFlight = null;
+
 function normalizeCravingTag(raw) {
   let t = String(raw || '').trim().toLowerCase();
   if (t.startsWith('#')) t = t.slice(1);
   return t;
+}
+
+function escapeHtmlAttr(str) {
+  return String(str || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function renderTrendTags(containerEl, tags, emptyLabel) {
+  if (!containerEl) return;
+  const raw = Array.isArray(tags) ? tags : [];
+  const list = raw
+    .map(normalizeCravingTag)
+    .filter(Boolean)
+    .filter((t) => !cravingsSelectedTags.has(t));
+
+  if (!list.length) {
+    containerEl.innerHTML = `<div class="cravings-trends-empty">${escapeHtmlAttr(emptyLabel)}</div>`;
+    return;
+  }
+
+  containerEl.innerHTML = list
+    .map((t) => {
+      const safe = escapeHtmlAttr(t);
+      return `<button type="button" class="post-tag" data-cravings-seed="${safe}" aria-label="Search cravings for #${safe}">#${safe}</button>`;
+    })
+    .join('');
+}
+
+function renderTrends() {
+  if (!cravingsTrends) return;
+  const popular = trendsCache?.popular || [];
+  const hot = trendsCache?.hot || [];
+  renderTrendTags(cravingsPopularTags, popular, 'No popular tags yet');
+  renderTrendTags(cravingsHotTags, hot, 'No hot tags yet');
+}
+
+async function ensureTrendsLoaded() {
+  if (!cravingsTrends) return;
+  const now = Date.now();
+  const maxAgeMs = 10 * 60 * 1000;
+
+  if (trendsCache && (now - trendsCache.ts) < maxAgeMs) {
+    renderTrends();
+    return;
+  }
+
+  if (trendsInFlight) {
+    try {
+      await trendsInFlight;
+    } catch (e) {
+      // ignore
+    }
+    renderTrends();
+    return;
+  }
+
+  trendsInFlight = (async () => {
+    try {
+      const [popularResp, hotResp] = await Promise.all([
+        fetch(popularTagsUrl, {
+          method: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin',
+        }),
+        fetch(`${hotTagsUrl}?days=${HOT_TAGS_DAYS}`, {
+          method: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin',
+        }),
+      ]);
+
+      const popularData = popularResp.ok ? await popularResp.json() : null;
+      const hotData = hotResp.ok ? await hotResp.json() : null;
+      const popular = Array.isArray(popularData?.tags) ? popularData.tags : [];
+      const hot = Array.isArray(hotData?.tags) ? hotData.tags : [];
+      trendsCache = { ts: Date.now(), popular, hot };
+    } catch (e) {
+      trendsCache = { ts: Date.now(), popular: [], hot: [] };
+    }
+  })();
+
+  try {
+    await trendsInFlight;
+  } finally {
+    trendsInFlight = null;
+  }
+
+  renderTrends();
+}
+
+function syncTrends() {
+  if (!cravingsTrends) return;
+  ensureTrendsLoaded();
 }
 
 function readCravingsFromUrl() {
@@ -2259,7 +2695,6 @@ function setCravingsPinnedOpen(pinned) {
     const url = new URL(window.location.href);
     if (pinned) {
       url.searchParams.set('cr', '1');
-      url.searchParams.set('ml', '1');
     } else {
       url.searchParams.delete('cr');
     }
@@ -2293,7 +2728,6 @@ function navigateWithCravingsTags(tags) {
     }
     // Keep the panel open after reload.
     url.searchParams.set('cr', '1');
-    url.searchParams.set('ml', '1');
     window.location.assign(url.toString());
   } catch (e) {
     window.location.assign(window.location.pathname);
@@ -2331,6 +2765,11 @@ function renderCravingsSelected() {
   });
 
   syncCravingsApplyState();
+
+  // Keep Popular/Hot chips in sync as tags are selected/deselected.
+  if (trendsCache) {
+    renderTrends();
+  }
 }
 
 function renderCravingsSuggest(tags) {
@@ -2388,16 +2827,73 @@ async function fetchCravingsSuggest(query) {
 
 function setCravingsOpen(open) {
   if (!cravingsCard) return;
-  cravingsCard.classList.toggle('active', open);
-  if (cravingsBtn) cravingsBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
-  setCravingsPinnedOpen(open);
+
+  if (!window.__favesCravingsCloseTimer) {
+    window.__favesCravingsCloseTimer = null;
+  }
+
+  if (window.__favesCravingsCloseTimer) {
+    clearTimeout(window.__favesCravingsCloseTimer);
+    window.__favesCravingsCloseTimer = null;
+  }
+
   if (open) {
-    setMyLocationPanelOpen(true);
+    cravingsCard.classList.remove('closing');
+    cravingsCard.classList.add('active');
+    if (cravingsBtn) cravingsBtn.setAttribute('aria-pressed', 'true');
+    setCravingsPinnedOpen(true);
+    setFeedSideOpen(true);
+    // If My Location is not open, keep it visually closed.
+    syncMyLocationCardVisibility();
+    syncTrends();
     cravingsInput?.focus();
   } else {
+    if (cravingsBtn) cravingsBtn.setAttribute('aria-pressed', 'false');
+    setCravingsPinnedOpen(false);
     renderCravingsSuggest([]);
+
+    // If it's not open, nothing to animate.
+    if (!cravingsCard.classList.contains('active')) {
+      cravingsCard.classList.remove('closing');
+      return;
+    }
+
+    cravingsCard.classList.add('closing');
+    window.__favesCravingsCloseTimer = setTimeout(() => {
+      cravingsCard.classList.remove('active');
+      cravingsCard.classList.remove('closing');
+      window.__favesCravingsCloseTimer = null;
+
+      // Close the whole sidebar only if My Location isn't open.
+      if (!myLocationPanelOpenState) {
+        setFeedSideOpen(false);
+      }
+    }, 190);
   }
 }
+
+function seedCravingsFromTag(rawTag) {
+  const tag = normalizeCravingTag(rawTag);
+  if (!tag) return;
+
+  setCravingsOpen(true);
+  if (cravingsInput) {
+    cravingsInput.value = `#${tag}`;
+  }
+
+  // Fetch suggestions immediately so it feels like autocomplete.
+  fetchCravingsSuggest(tag);
+}
+
+// Clicking a post tag seeds the cravings input.
+document.addEventListener('click', (e) => {
+  const tagBtn = e.target.closest('[data-cravings-seed]');
+  if (!tagBtn) return;
+  e.preventDefault();
+  // Prevent opening the post modal when clicking a tag.
+  e.stopPropagation();
+  seedCravingsFromTag(tagBtn.getAttribute('data-cravings-seed'));
+});
 
 // Expose for base.html to call.
 window.favesToggleCravingsPanel = function () {
@@ -2590,9 +3086,7 @@ document.addEventListener('keydown', (e) => {
 const myLocationBtn = document.getElementById('myLocationButton');
 if (myLocationBtn) {
   myLocationBtn.addEventListener('click', () => {
-    const side = document.getElementById('myLocationSide');
-    const isOpen = !!(side && side.classList.contains('active'));
-    setMyLocationPanelOpen(!isOpen);
+    setMyLocationPanelOpen(!myLocationPanelOpenState);
   });
 }
 
@@ -2660,6 +3154,8 @@ if (removeLocationFilterBtn) {
 
   if (isMyLocationPanelPinnedOpen()) {
     setMyLocationPanelOpen(true);
+  } else {
+    setMyLocationPanelOpen(false);
   }
 })();
 

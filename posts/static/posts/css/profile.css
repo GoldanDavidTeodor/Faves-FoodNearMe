@@ -362,9 +362,44 @@ html, body { height: 100%; overflow: hidden; }
 .mini-loc { margin-top: .35rem; display: inline-flex; align-items: center; gap: .35rem; color: rgba(238,241,248,.54); font-size: .76rem; font-weight: 750; }
 .mini-loc i { font-size: .95rem; }
 
-.rating-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1500; padding: 1rem; }
-.rating-modal-backdrop.active { display: flex; }
-.rating-modal { width: 100%; max-width: 380px; background: #161514; border-radius: 18px; box-shadow: 0 26px 72px rgba(0,0,0,.6); padding: 1rem; border: 1px solid rgba(255,255,255,.12); }
+.rating-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .16s ease, visibility 0s linear .16s;
+}
+.rating-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .16s ease;
+}
+.rating-modal {
+  width: 100%;
+  max-width: 380px;
+  background: #161514;
+  border-radius: 18px;
+  box-shadow: 0 26px 72px rgba(0,0,0,.6);
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,.12);
+  opacity: 0;
+  transform: translateY(10px) scale(.985);
+  transition: opacity .20s cubic-bezier(.2, .9, .2, 1), transform .20s cubic-bezier(.2, .9, .2, 1);
+}
+.rating-modal-backdrop.active .rating-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
 .rating-modal h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
 .rating-modal p { margin: 0 0 .8rem; color: rgba(238,241,248,.62); font-size: .9rem; font-weight: 650; }
 .rating-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .45rem; }
@@ -374,8 +409,37 @@ html, body { height: 100%; overflow: hidden; }
 .rating-modal-actions { margin-top: .85rem; display: flex; justify-content: flex-end; }
 .rating-cancel { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.88); border-radius: 12px; padding: .45rem .85rem; cursor: pointer; font-weight: 900; }
 
-.comment-modal-backdrop { position: fixed; inset: 0; background: rgba(8, 10, 14, .72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1600; padding: 1rem; }
-.comment-modal-backdrop.active { display: flex; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.comment-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1600;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .16s ease, visibility 0s linear .16s;
+}
+.comment-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .16s ease;
+}
 .comment-modal {
   width: min(1320px, 100%);
   height: min(760px, 92vh);
@@ -386,6 +450,13 @@ html, body { height: 100%; overflow: hidden; }
   background: #161514;
   border: 1px solid rgba(255,255,255,.12);
   box-shadow: 0 32px 88px rgba(0,0,0,.55);
+  opacity: 0;
+  transform: translateY(10px) scale(.988);
+  transition: opacity .22s cubic-bezier(.2, .9, .2, 1), transform .22s cubic-bezier(.2, .9, .2, 1);
+}
+.comment-modal-backdrop.active .comment-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 .comment-modal-left { background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; min-height: 0; }
 .modal-tab-panel { flex: 1; min-height: 0; display: flex; min-width: 0; }

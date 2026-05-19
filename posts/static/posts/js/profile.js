@@ -408,11 +408,13 @@ const ratingModal = document.getElementById('ratingModal');
 const ratingChoices = ratingModal.querySelectorAll('.rating-choice');
 const ratingCancel = document.getElementById('ratingCancel');
 let activeRateForm = null;
+let activeRateTrigger = null;
 
 function closeRatingModal() {
   ratingModal.classList.remove('active');
   ratingModal.setAttribute('aria-hidden', 'true');
   activeRateForm = null;
+  activeRateTrigger = null;
 }
 
 function openRatingModal(form, currentValue) {
@@ -428,6 +430,7 @@ document.querySelectorAll('[data-rate-trigger]').forEach(btn => {
   btn.addEventListener('click', () => {
     const form = btn.closest('[data-rate-form]');
     const ratingInput = form.querySelector('input[name="rating"]');
+    activeRateTrigger = btn;
     openRatingModal(form, ratingInput.value || btn.dataset.currentRating || '');
   });
 });
@@ -440,7 +443,51 @@ ratingChoices.forEach(choice => {
 
     const ratingInput = activeRateForm.querySelector('input[name="rating"]');
     ratingInput.value = choice.dataset.value;
-    activeRateForm.submit();
+
+    const body = new FormData(activeRateForm);
+    fetch(activeRateForm.action, {
+      method: 'POST',
+      body,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin'
+    })
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then((payload) => {
+        if (!payload) {
+          return;
+        }
+
+        const updatedRating = payload.current_user_rating;
+        if (activeRateTrigger) {
+          if (updatedRating) {
+            activeRateTrigger.classList.add('rated');
+            activeRateTrigger.dataset.currentRating = String(updatedRating);
+          } else {
+            activeRateTrigger.classList.remove('rated');
+            activeRateTrigger.dataset.currentRating = '';
+          }
+        }
+
+        // Update the rating count text next to the cookie icon.
+        const wrap = activeRateForm.parentElement;
+        const countEl = wrap ? wrap.querySelector('.mini-count') : null;
+        const count = Number(payload.ratings_count || 0);
+        const avg = (typeof payload.avg_rating === 'number') ? payload.avg_rating : Number.parseFloat(payload.avg_rating);
+        if (countEl) {
+          if (count > 0 && Number.isFinite(avg)) {
+            countEl.textContent = `${avg.toFixed(1)} (${count})`;
+          } else {
+            countEl.textContent = '';
+          }
+        }
+
+        closeRatingModal();
+      })
+      .catch(() => {
+        // keep modal open on failure
+      });
   });
 });
 
