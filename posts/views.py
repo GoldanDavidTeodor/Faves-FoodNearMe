@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Prefetch, Q, Value, FloatField, ExpressionWrapper, F
 from django.db.models.functions import ACos, Cos, Sin, Radians, Greatest, Least
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -27,6 +27,30 @@ COMMENT_PREFETCH = Prefetch(
 
 def _wants_json(request):
     return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+FEED_PAGE_SIZE = 20
+
+
+def _parse_positive_int(value, default=1):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return parsed if parsed >= 1 else default
+
+
+def _clean_next_url(request):
+    """Return a safe `next` URL for form redirects.
+
+    We intentionally strip pagination/partial params so form POST redirects never land
+    on a partial HTML endpoint.
+    """
+    params = request.GET.copy()
+    params.pop("partial", None)
+    params.pop("page", None)
+    qs = params.urlencode()
+    return f"{request.path}?{qs}" if qs else request.path
 
 
 def _attach_current_user_ratings(posts, user):
@@ -212,11 +236,113 @@ def feed(request):
     else:
         posts_qs = posts_qs.order_by("-created_at", "-id")
 
-    posts = posts_qs[:50]
+    page = _parse_positive_int(request.GET.get("page"), default=1)
+    page_size = FEED_PAGE_SIZE
+    start = (page - 1) * page_size
+    window = list(posts_qs[start:start + page_size + 1])
+    posts = window[:page_size]
+    has_more = len(window) > page_size
 
     # Build a set of post IDs the current user has liked
     liked_ids = set()
     if request.user.is_authenticated:
+        liked_ids = set(
+            Like.objects.filter(user=request.user, post__in=posts)
+            .values_list("post_id", flat=True)
+        )
+
+    _attach_current_user_ratings(posts, request.user)
+    _attach_current_user_comment_likes(posts, request.user)
+    _attach_comment_threads(posts)
+
+    post_locations = []
+    for post in posts:
+        if post.lat is None or post.lng is None:
+            continue
+        try:
+            lat = float(post.lat)
+            lng = float(post.lng)
+        except (TypeError, ValueError):
+            continue
+
+        post_locations.append({
+            "id": post.id,
+            "title": post.title,
+            "username": post.user.username,
+            "lat": lat,
+            "lng": lng,
+        })
+
+    next_url = _clean_next_url(request)
+    is_partial = request.GET.get("partial") == "1"
+    if is_partial:
+        resp = render(request, "posts/_feed_post_cards.html", {
+            "posts": posts,
+            "liked_ids": liked_ids,
+            "next_url": next_url,
+        })
+        resp["X-Has-More"] = "1" if has_more else "0"
+        resp["X-Next-Page"] = str(page + 1)
+        return resp
+
+    followers = []
+    if request.user.is_authenticated:
+        followers = _get_followers_for_user(request.user)
+
+    return render(request, "posts/feed.html", {
+        "page_title": "Feed",
+        "next_url": next_url,
+        "page_mode": "feed",
+        "posts": posts,
+        "has_more": has_more,
+        "liked_ids": liked_ids,
+        "followers": followers,
+        "post_locations": post_locations,
+        "location_filter": {
+            "active": has_location_filter,
+            "lat": filter_lat,
+            "lng": filter_lng,
+            "range_km": filter_range_km,
+        },
+        "selected_tags": selected_tags,
+    })
+
+
+def explore(request):
+    """Map-first Explore page: big map in the main column, selected post shown on the right."""
+    selected_tags = _parse_feed_tags_filter(request)
+    has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
+
+    posts_qs = _get_feed_posts_queryset(
+        has_location_filter=has_location_filter,
+        filter_lat=filter_lat,
+        filter_lng=filter_lng,
+        filter_range_km=filter_range_km,
+    )
+
+    # Explore is map-first, so only include posts that can be placed on the map.
+    posts_qs = posts_qs.filter(lat__isnull=False, lng__isnull=False)
+
+    # Keep tag filtering compatible with the existing query params.
+    if selected_tags:
+        posts_qs = (
+            posts_qs.annotate(
+                matched_tags_count=Count(
+                    "tags",
+                    filter=Q(tags__name__in=selected_tags),
+                    distinct=True,
+                )
+            )
+            .filter(matched_tags_count__gt=0)
+            .order_by("-matched_tags_count", "-created_at", "-id")
+        )
+    else:
+        posts_qs = posts_qs.order_by("-created_at", "-id")
+
+    posts = list(posts_qs[:220])
+
+    liked_ids = set()
+    if request.user.is_authenticated and posts:
         liked_ids = set(
             Like.objects.filter(user=request.user, post__in=posts)
             .values_list("post_id", flat=True)
@@ -249,8 +375,10 @@ def feed(request):
         followers = _get_followers_for_user(request.user)
 
     return render(request, "posts/feed.html", {
-        "page_title": "Feed",
+        "page_title": "Explore",
         "next_url": request.get_full_path(),
+        "page_mode": "explore_map",
+        "container_max": "100%",
         "posts": posts,
         "liked_ids": liked_ids,
         "followers": followers,
@@ -565,10 +693,17 @@ def for_you(request):
             scored.append((s, post.created_at, post.id, post))
 
         scored.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
-        posts = [row[3] for row in scored[:50]]
+        ordered = [row[3] for row in scored]
     else:
         # Not logged in: fall back to a simple feed-like ordering.
-        posts = candidates[:50]
+        ordered = candidates
+
+    page = _parse_positive_int(request.GET.get("page"), default=1)
+    page_size = FEED_PAGE_SIZE
+    start = (page - 1) * page_size
+    window = ordered[start:start + page_size + 1]
+    posts = window[:page_size]
+    has_more = len(window) > page_size
 
     liked_ids = set()
     if request.user.is_authenticated and posts:
@@ -599,14 +734,28 @@ def for_you(request):
             "lng": lng,
         })
 
+    next_url = _clean_next_url(request)
+    is_partial = request.GET.get("partial") == "1"
+    if is_partial:
+        resp = render(request, "posts/_feed_post_cards.html", {
+            "posts": posts,
+            "liked_ids": liked_ids,
+            "next_url": next_url,
+        })
+        resp["X-Has-More"] = "1" if has_more else "0"
+        resp["X-Next-Page"] = str(page + 1)
+        return resp
+
     followers = []
     if request.user.is_authenticated:
         followers = _get_followers_for_user(request.user)
 
     return render(request, "posts/feed.html", {
         "page_title": "For You",
-        "next_url": request.get_full_path(),
+        "next_url": next_url,
+        "page_mode": "for_you",
         "posts": posts,
+        "has_more": has_more,
         "liked_ids": liked_ids,
         "followers": followers,
         "post_locations": post_locations,
@@ -1003,7 +1152,7 @@ def messages(request, username=None):
             shared_posts = list(
                 Post.objects.filter(id__in=shared_post_ids)
                 .select_related("user", "user__profile")
-                .prefetch_related("images", "tags")
+                .prefetch_related("images", "tags", COMMENT_PREFETCH)
                 .annotate(
                     avg_rating=Avg("ratings__value"),
                     ratings_count=Count("ratings", distinct=True),
@@ -1015,6 +1164,8 @@ def messages(request, username=None):
                 Profile.objects.get_or_create(user=post.user)
 
             _attach_current_user_ratings(shared_posts, request.user)
+            _attach_current_user_comment_likes(shared_posts, request.user)
+            _attach_comment_threads(shared_posts)
 
             liked_ids = set(
                 Like.objects.filter(user=request.user, post_id__in=shared_post_ids)
@@ -1065,6 +1216,7 @@ def messages(request, username=None):
         "thread_messages": thread_messages,
         "thread_items": thread_items,
         "liked_ids": liked_ids if username else set(),
+        "next_url": request.get_full_path(),
         "form": form,
     })
 

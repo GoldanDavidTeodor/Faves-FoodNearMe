@@ -234,7 +234,7 @@
       }
 
       .main-content { margin-left: 282px; flex: 1; min-height: 100vh; }
-      .container { max-width: 1200px; padding: 1.25rem 1.25rem 2.25rem; }
+      .container { max-width: var(--container-max, 1200px); padding: 1.25rem 1.25rem 2.25rem; }
 
       /* Shared */
       .btn { display: inline-block; padding: .48rem 1rem; border: none; border-radius: 11px; font-size: .9rem; cursor: pointer; text-decoration: none; font-weight: 700; }
@@ -329,7 +329,7 @@
       <a class="sidebar-brand" href="{% url 'feed' %}">Faves</a>
       <ul class="sidebar-nav">
         <li><a href="{% url 'feed' %}"><i class="ci-House_01"></i><span class="sidebar-label">Home</span></a></li>
-        <li><a href="{% url 'feed' %}"><i class="ci-Compass"></i><span class="sidebar-label">Explore</span></a></li>
+        <li><a href="{% url 'explore' %}"><i class="ci-Compass"></i><span class="sidebar-label">Explore</span></a></li>
         <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i><span class="sidebar-label">For You</span></a></li>
         {% if user.is_authenticated %}
         <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i><span class="sidebar-label">Profile</span></a></li>
@@ -395,7 +395,7 @@
     </aside>
 
     <div class="main-content">
-      <main class="container">
+      <main class="container"{% if container_max %} style="--container-max: {{ container_max }};"{% endif %}>
         {% block content %}{% endblock %}
       </main>
     </div>

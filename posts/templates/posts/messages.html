@@ -4,13 +4,18 @@
 {% block title %}Messages — Faves{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'posts/css/comment_modal.css' %}" />
 <link rel="stylesheet" href="{% static 'posts/css/messages.css' %}" />
 {% endblock %}
 
 {% block content %}
 {% include "posts/messages/_layout.html" %}
+{% include "posts/profile/_comment_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'posts/js/comment_modal.js' %}"></script>
 <script src="{% static 'posts/js/messages.js' %}"></script>
 {% endblock %}

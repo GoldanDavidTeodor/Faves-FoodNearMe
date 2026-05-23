@@ -1138,220 +1138,41 @@
 
 {% block content %}
 {{ post_locations|json_script:"feedPostLocations" }}
+{% if page_mode == "explore_map" %}
 <div class="feed-layout">
-  <div class="feed-main">
+  <div class="feed-main" style="flex: 1 1 auto; width: auto; max-width: none; min-width: 0;">
+    <div class="my-location-card">
+      <div class="my-location-card-header">
+        <div class="my-location-card-title">Explore Map</div>
+      </div>
+      <div class="my-location-card-body" style="padding:0;">
+        <div id="exploreMap" style="width:100%;height:calc(100vh - 160px);min-height:640px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="exploreHiddenPosts" style="display:none;">
   {% for post in posts %}
     <div class="post-card" id="post-{{ post.id }}">
-    <div class="post-header">
-      <div class="post-header-left">
-        {% if post.user.profile.avatar %}
-          <img src="{{ post.user.profile.avatar.url }}" alt="" class="avatar">
-        {% else %}
-          <div class="avatar-placeholder">{{ post.user.username|first|upper }}</div>
-        {% endif %}
-        <div class="post-user-meta">
-          <a href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a>
-          <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
-        </div>
-      </div>
-      <div class="post-menu" data-post-menu>
-        <button type="button" class="post-menu-btn" aria-label="Post options" data-post-menu-btn>
-          <span class="post-menu-dots" aria-hidden="true"></span>
-        </button>
-        <div class="post-menu-popover" role="menu" aria-label="Post options" data-post-menu-popover>
-          {% if user.is_authenticated %}
-            <form method="post" action="{% url 'post_report' post.id %}" style="margin:0;">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ next_url }}">
-              <button type="submit" class="post-menu-item danger" role="menuitem">Report post</button>
-            </form>
+      <div class="post-header">
+        <div class="post-header-left">
+          {% if post.user.profile.avatar %}
+            <img src="{{ post.user.profile.avatar.url }}" alt="" class="avatar">
           {% else %}
-            <a class="post-menu-item" role="menuitem" href="{% url 'login' %}">Log in to report</a>
+            <div class="avatar-placeholder">{{ post.user.username|first|upper }}</div>
           {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="post-tabs">
-      <button class="tab-btn active" data-tab="images-{{ post.id }}">Images</button>
-      <button class="tab-btn" data-tab="location-{{ post.id }}">Location</button>
-    </div>
-    <div class="post-tab-content">
-      <div id="images-{{ post.id }}" class="tab-panel" style="display: block;">
-      {% if post.images.all %}
-      <div class="post-images" data-carousel data-image-trigger>
-        {% for img in post.images.all %}
-          <img src="{{ img.image.url }}" alt="{{ post.title }}" {% if forloop.first %}class="active"{% endif %}>
-        {% endfor %}
-        <div class="carousel-dots">
-          {% for img in post.images.all %}
-            <button class="dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></button>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-      </div>
-      <div id="location-{{ post.id }}" class="tab-panel" style="display: none;">
-        <div class="post-location-placeholder" style="padding:0;">
-          {% if post.lat and post.lng %}
-            <div id="map-{{ post.id }}" class="leaflet-map-container" style="width:100%;height:100%;min-height:480px;" data-lat="{{ post.lat }}" data-lng="{{ post.lng }}"></div>
-          {% else %}
-            Location not available.
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="post-footer">
-      <div class="post-actions">
-        <div class="action-group">
-          {% if user.is_authenticated %}
-          <form method="post" action="{% url 'post_like' post.id %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ next_url }}">
-            <button type="submit" class="action-btn {% if post.id in liked_ids %}liked{% endif %}">
-              <i class="ci-Heart_01"></i>
-            </button>
-          </form>
-          {% else %}
-          <span class="action-btn"><i class="ci-Heart_01"></i></span>
-          {% endif %}
-          {% if post.likes.count %}<span class="count">{{ post.likes.count }}</span>{% endif %}
-        </div>
-        <div class="action-group">
-          <button class="action-btn" type="button" data-comment-toggle><i class="ci-Chat"></i></button>
-          {% if post.comments_count %}<span class="count">{{ post.comments_count }}</span>{% endif %}
-        </div>
-        <div class="action-group">
-          {% if user.is_authenticated %}
-          <button class="action-btn" type="button" data-share-toggle data-share-post-id="{{ post.id }}" data-share-action="{% url 'post_share' post.id %}" aria-label="Share post"><i class="ci-Paper_Plane"></i></button>
-          {% else %}
-          <span class="action-btn"><i class="ci-Paper_Plane"></i></span>
-          {% endif %}
-          <span class="count" data-share-count="{{ post.id }}">{{ post.shares_count|default:0 }}</span>
-        </div>
-        <div class="action-group">
-          {% if user.is_authenticated %}
-          <form method="post" action="{% url 'post_rate' post.id %}" style="display:inline;" data-rate-form>
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ next_url }}">
-            <input type="hidden" name="rating" value="{{ post.current_user_rating|default_if_none:'' }}">
-            <button type="button" class="action-btn {% if post.current_user_rating %}rated{% endif %}" data-rate-trigger data-current-rating="{{ post.current_user_rating|default_if_none:'' }}">
-              <i class="ci-Cookie"></i>
-            </button>
-          </form>
-          {% else %}
-          <span class="action-btn"><i class="ci-Cookie"></i></span>
-          {% endif %}
-          <span
-            class="count rating-count"
-            data-rating-count="{{ post.id }}"
-            {% if not post.ratings_count %}style="display:none;"{% endif %}
-          >{{ post.avg_rating|floatformat:1 }} ({{ post.ratings_count }})</span>
+          <div class="post-user-meta">
+            <a href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a>
+            <span class="post-date">{{ post.created_at|date:"M d, Y" }}</span>
+          </div>
         </div>
       </div>
 
       <p class="post-title-line">{{ post.title }}</p>
-
-      {% with tags=post.tags.all %}
-        {% if tags %}
-          <div class="post-tags" aria-label="Post tags">
-            {% for tag in tags %}
-              <button
-                type="button"
-                class="post-tag"
-                data-cravings-seed="{{ tag.name }}"
-                aria-label="Search cravings for #{{ tag.name }}"
-              >#{{ tag.name }}</button>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-
       {% if post.description %}
         <p class="post-desc">{{ post.description }}</p>
       {% endif %}
-
-      {% if post.address_text %}
-        <p class="post-meta"><i class="ci-Map_Pin"></i> {{ post.address_text }}</p>
-      {% endif %}
-
-      <div class="inline-comments" data-inline-comments>
-        <div class="inline-comments-list">
-          {% for comment in post.top_level_comments %}
-            <div class="comment-item">
-              {% if comment.user.profile.avatar %}
-                <img src="{{ comment.user.profile.avatar.url }}" alt="" class="comment-avatar">
-              {% else %}
-                <div class="comment-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
-              {% endif %}
-              <div class="comment-body">
-                <p class="comment-text"><strong>{{ comment.user.username }}</strong>{{ comment.text }}</p>
-                <div class="comment-meta-row">
-                  <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
-                  <div class="comment-like-controls">
-                    {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'comment_like' comment.id %}" class="comment-like-form">
-                      {% csrf_token %}
-                      <input type="hidden" name="next" value="{{ next_url }}">
-                      <button type="submit" class="comment-like-btn {% if comment.current_user_liked %}liked{% endif %}" aria-label="Like comment">
-                        <i class="ci-Heart_01"></i>
-                      </button>
-                    </form>
-                    {% else %}
-                    <span class="comment-like-btn"><i class="ci-Heart_01"></i></span>
-                    {% endif %}
-                    <span class="comment-like-count">{{ comment.likes_count|default_if_none:0 }}</span>
-                  </div>
-                </div>
-                {% if user.is_authenticated %}
-                <button type="button" class="reply-btn" data-reply-parent="{{ comment.id }}" data-reply-username="{{ comment.user.username }}">Reply</button>
-                {% endif %}
-
-                {% if comment.thread_replies %}
-                <button type="button" class="replies-toggle" data-replies-toggle data-replies-count="{{ comment.thread_replies|length }}">View replies ({{ comment.thread_replies|length }})</button>
-                <div class="comment-replies">
-                  {% for reply in comment.thread_replies %}
-                  <div class="comment-item">
-                    {% if reply.user.profile.avatar %}
-                      <img src="{{ reply.user.profile.avatar.url }}" alt="" class="comment-avatar">
-                    {% else %}
-                      <div class="comment-avatar-placeholder">{{ reply.user.username|first|upper }}</div>
-                    {% endif %}
-                    <div class="comment-body">
-                      <p class="comment-text"><strong>{{ reply.user.username }}</strong>{{ reply.text }}</p>
-                      <div class="comment-meta-row">
-                        <span class="comment-date">{{ reply.created_at|date:"M d, Y H:i" }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {% endfor %}
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          {% empty %}
-            <p class="comment-empty">No comments yet.</p>
-          {% endfor %}
-        </div>
-        {% if user.is_authenticated %}
-        <form class="comment-form" method="post" action="{% url 'post_comment' post.id %}">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ next_url }}">
-          <input type="hidden" name="parent_id" value="" data-reply-parent-input>
-          <div class="replying-hint" data-replying-hint>
-            <span>Replying to <strong data-replying-user></strong></span>
-            <button type="button" data-reply-cancel>&times;</button>
-          </div>
-          <div class="comment-input-row">
-            <textarea name="text" placeholder="Add a comment..." maxlength="1000" required></textarea>
-            <button type="submit" class="comment-send" aria-label="Send comment">
-              <i class="ci-Paper_Plane"></i>
-            </button>
-          </div>
-        </form>
-        {% endif %}
-      </div>
 
       <div class="comment-modal-data" style="display:none;" 
            data-lat="{{ post.lat }}" data-lng="{{ post.lng }}" data-post-id="{{ post.id }}">
@@ -1414,12 +1235,21 @@
         </div>
       </div>
     </div>
-  </div>
   {% empty %}
-    <div class="card" style="text-align:center; max-width:540px; margin:2rem auto;">
-      <p>No posts yet. Be the first to share a food spot!</p>
+    <div class="card" style="text-align:center; margin:0;">
+      <p>No posts with locations yet.</p>
     </div>
   {% endfor %}
+</div>
+{% else %}
+<div class="feed-layout">
+  <div class="feed-main">
+    <div id="feedPosts" data-feed-posts>
+      {% include "posts/_feed_post_cards.html" %}
+    </div>
+    {% if has_more %}
+      <div id="feedInfiniteSentinel" data-feed-sentinel aria-hidden="true" style="height:1px;"></div>
+    {% endif %}
   </div>
 
   <aside class="feed-side" id="myLocationSide" aria-hidden="true">
@@ -1503,6 +1333,7 @@
     </div>
   </aside>
 </div>
+{% endif %}
 
 {% if user.is_authenticated %}
 <div class="preset-modal-backdrop" id="locationPresetModal" aria-hidden="true">
@@ -1720,7 +1551,7 @@ let modalMap = null;
 let modalMarker = null;
 
 function syncFeedSideLeft() {
-  const side = document.getElementById('myLocationSide');
+  const side = document.querySelector('.feed-side.active') || document.querySelector('.feed-side');
   const main = document.querySelector('.feed-main');
   const layout = document.querySelector('.feed-layout');
   if (!side || !main || !layout) return;
@@ -1745,6 +1576,16 @@ function syncFeedSideLeft() {
 }
 
 window.addEventListener('resize', syncFeedSideLeft, { passive: true });
+
+// If a side panel is already active on load (Explore map), sync once.
+requestAnimationFrame(() => {
+  try {
+    syncFeedSideLeft();
+    setTimeout(syncFeedSideLeft, 80);
+  } catch (e) {
+    // ignore
+  }
+});
 
 // --- REPLIES TOGGLE LOGIC (Event Delegation Corectat) ---
 document.addEventListener('click', function(e) {
@@ -1965,6 +1806,8 @@ function maybeAutoOpenPostModalFromUrl() {
       return;
     }
 
+    const isExplore = !!document.getElementById('exploreMap');
+
     const card = document.getElementById(`post-${openPostId}`);
     if (!card) {
       return;
@@ -1976,10 +1819,12 @@ function maybeAutoOpenPostModalFromUrl() {
 
     // Ensure the card is visible, then open the same modal flow as clicking the card.
     requestAnimationFrame(() => {
-      try {
-        card.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      } catch (e) {
-        // ignore
+      if (!isExplore) {
+        try {
+          card.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        } catch (e) {
+          // ignore
+        }
       }
       openCommentModalFromCard(card);
     });
@@ -2239,6 +2084,57 @@ function getFeedPostLocations() {
   } catch (e) {
     return [];
   }
+}
+
+// --- Explore Map (map-first Explore page) ---
+let exploreMap = null;
+
+function exploreIsActive() {
+  return !!document.getElementById('exploreMap');
+}
+
+function initExploreMapIfPresent() {
+  const el = document.getElementById('exploreMap');
+  if (!el || !window.L) return;
+  if (exploreMap) return;
+
+  exploreMap = L.map('exploreMap', { zoomControl: true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(exploreMap);
+
+  const layer = L.layerGroup().addTo(exploreMap);
+  const all = getFeedPostLocations();
+  const bounds = [];
+  const text = getTextColor();
+
+  all.forEach((p) => {
+    if (typeof p?.lat !== 'number' || typeof p?.lng !== 'number') return;
+    const id = String(p.id || '').trim();
+    if (!id) return;
+
+    const marker = L.circleMarker([p.lat, p.lng], {
+      radius: 9,
+      color: text,
+      opacity: 0.95,
+      weight: 3,
+      fillColor: '#e53935',
+      fillOpacity: 0.95,
+    });
+
+    marker.on('click', () => {
+      const card = document.getElementById(`post-${id}`);
+      if (!card) return;
+      openCommentModalFromCard(card);
+    });
+    marker.addTo(layer);
+    bounds.push([p.lat, p.lng]);
+  });
+
+  if (bounds.length) {
+    exploreMap.fitBounds(bounds, { padding: [26, 26], maxZoom: 14 });
+  } else {
+    exploreMap.setView([20, 0], 2);
+  }
+
 }
 
 function haversineKm(aLat, aLng, bLat, bLng) {
@@ -3207,6 +3103,14 @@ if (removeLocationFilterBtn) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAll();
   });
+})();
+
+// --- Explore (map-first) init ---
+(function initExploreMap() {
+  if (!exploreIsActive()) return;
+  initExploreMapIfPresent();
+  // Leaflet needs a resize once visible.
+  setTimeout(() => exploreMap?.invalidateSize(), 60);
 })();
 </script>
 {% endblock %}

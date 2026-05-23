@@ -35,7 +35,13 @@
       {% if user.is_authenticated %}
       <form class="comment-form" id="commentModalForm" method="post" action="">
         {% csrf_token %}
-        <input type="hidden" name="next" value="{{ profile_url }}">
+        {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+        {% elif profile_url %}
+          <input type="hidden" name="next" value="{{ profile_url }}">
+        {% else %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+        {% endif %}
         <input type="hidden" name="parent_id" value="" id="commentModalParentId">
         <div class="replying-hint" id="commentModalReplyingHint">
           <span>Replying to <strong id="commentModalReplyingUser"></strong></span>
