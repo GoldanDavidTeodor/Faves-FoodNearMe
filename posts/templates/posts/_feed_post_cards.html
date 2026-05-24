@@ -130,6 +130,10 @@
       <p class="post-desc">{{ post.description }}</p>
     {% endif %}
 
+    {% if post.price or post.price == 0 %}
+      <p class="post-meta">Price: {{ post.price|floatformat:2 }}</p>
+    {% endif %}
+
     {% if post.address_text %}
       <p class="post-meta"><i class="ci-Map_Pin"></i> {{ post.address_text }}</p>
     {% endif %}

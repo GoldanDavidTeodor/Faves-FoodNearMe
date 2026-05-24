@@ -635,6 +635,7 @@ def surprise_me(request):
     return redirect(f"{base_url}#post-{post_id}")
 
 
+@login_required
 def for_you(request):
     selected_tags = _parse_feed_tags_filter(request)
 

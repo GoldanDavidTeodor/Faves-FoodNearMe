@@ -13,10 +13,17 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["title", "description", "address_text", "lat", "lng"]
+        fields = ["title", "description", "address_text", "price", "lat", "lng"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if "price" in self.fields:
+            self.fields["price"].widget.attrs.update({
+                "placeholder": "",
+                "inputmode": "decimal",
+                "step": "0.01",
+                "min": "0",
+            })
         if self.instance and self.instance.pk:
             existing = list(self.instance.tags.order_by("name").values_list("name", flat=True))
             self.fields["tags"].initial = ", ".join(existing)

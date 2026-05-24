@@ -330,8 +330,8 @@
       <ul class="sidebar-nav">
         <li><a href="{% url 'feed' %}"><i class="ci-House_01"></i><span class="sidebar-label">Home</span></a></li>
         <li><a href="{% url 'explore' %}"><i class="ci-Compass"></i><span class="sidebar-label">Explore</span></a></li>
-        <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i><span class="sidebar-label">For You</span></a></li>
         {% if user.is_authenticated %}
+        <li><a href="{% url 'for_you' %}"><i class="ci-Heart_01"></i><span class="sidebar-label">For You</span></a></li>
         <li><a href="{% url 'profile' user.username %}"><i class="ci-User_Circle"></i><span class="sidebar-label">Profile</span></a></li>
         <li><a href="{% url 'messages' %}"><i class="ci-Chat"></i><span class="sidebar-label">Messages</span></a></li>
         <li><a href="{% url 'post_create' %}"><i class="ci-Add_Plus_Square"></i><span class="sidebar-label">Create</span></a></li>
