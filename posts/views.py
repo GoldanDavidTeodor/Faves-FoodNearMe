@@ -243,7 +243,6 @@ def feed(request):
     posts = window[:page_size]
     has_more = len(window) > page_size
 
-    # Build a set of post IDs the current user has liked
     liked_ids = set()
     if request.user.is_authenticated:
         liked_ids = set(
@@ -320,10 +319,8 @@ def explore(request):
         filter_range_km=filter_range_km,
     )
 
-    # Explore is map-first, so only include posts that can be placed on the map.
     posts_qs = posts_qs.filter(lat__isnull=False, lng__isnull=False)
 
-    # Keep tag filtering compatible with the existing query params.
     if selected_tags:
         posts_qs = (
             posts_qs.annotate(
@@ -422,7 +419,6 @@ def _build_for_you_user_signals(user):
         Follow.objects.filter(follower=user).values_list("following_id", flat=True)
     )
 
-    # Tag affinity from the user's ratings (recently updated ratings matter more).
     tag_affinity = {}
     rated = (
         Rating.objects.filter(user=user)
@@ -434,12 +430,10 @@ def _build_for_you_user_signals(user):
     for rating in rated:
         age_days = max(0.0, (now - rating.updated_at).total_seconds() / 86400.0)
         recency = 0.985 ** age_days
-        # Map 1..10 to roughly -1..+1 (neutral around ~5.5).
         centered = (float(rating.value) - 5.5) / 4.5
         for tag in rating.post.tags.all():
             tag_affinity[tag.name] = tag_affinity.get(tag.name, 0.0) + centered * recency
 
-    # Tags the user has posted about themselves (positive signal).
     own_tags_set = set()
     own_posts = (
         Post.objects.filter(user=user)
@@ -453,7 +447,6 @@ def _build_for_you_user_signals(user):
             own_tags_set.add(tag.name)
             tag_affinity[tag.name] = tag_affinity.get(tag.name, 0.0) + 0.35 * recency
 
-    # Reference location: use latest preset if available.
     reference_lat = None
     reference_lng = None
     latest_preset = (
@@ -483,7 +476,6 @@ def _score_for_you_post(
     user_rating_value=None,
 ):
     """Compute a weighted score for a post for For You ranking."""
-    # Tunable weights.
     W_TAG = 4.0
     W_FOLLOW = 1.8
     W_DISTANCE = 2.2
@@ -494,7 +486,6 @@ def _score_for_you_post(
 
     tags = [t.name for t in post.tags.all()]
 
-    # Tag affinity (normalized so many tags don't dominate).
     tag_component = 0.0
     if tags:
         for name in tags:
@@ -514,7 +505,6 @@ def _score_for_you_post(
     if ref_lat is not None and ref_lng is not None and post.lat is not None and post.lng is not None:
         dist_km = _haversine_km(ref_lat, ref_lng, post.lat, post.lng)
         if dist_km is not None:
-            # 1.0 when very close, 0.0 around 25km+ (tunable).
             distance_component = max(0.0, 1.0 - (dist_km / 25.0))
 
     quality_component = 0.0
@@ -538,10 +528,8 @@ def _score_for_you_post(
             user_rating_value = None
 
     if user_rating_value is not None:
-        # Hard suppression: if the user disliked it, it shouldn't be recommended.
         if user_rating_value <= 3:
             return -1_000_000.0
-        # Map 1..10 to roughly -1..+1 (neutral around ~5.5).
         centered = (float(user_rating_value) - 5.5) / 4.5
         user_rating_component = centered
 
@@ -639,8 +627,6 @@ def surprise_me(request):
 def for_you(request):
     selected_tags = _parse_feed_tags_filter(request)
 
-    # Optional location filter via query params (same as Feed). If present, use it as the reference
-    # point AND filter candidates to the range.
     has_location_filter, filter_lat, filter_lng, filter_range_km = _parse_feed_location_filter(request)
     posts_qs = _get_feed_posts_queryset(
         has_location_filter=has_location_filter,
@@ -649,7 +635,6 @@ def for_you(request):
         filter_range_km=filter_range_km,
     )
 
-    # If tags are explicitly selected, keep only posts that match.
     if selected_tags:
         posts_qs = (
             posts_qs.annotate(
@@ -665,7 +650,6 @@ def for_you(request):
     if request.user.is_authenticated:
         posts_qs = posts_qs.exclude(reports__reporter=request.user)
 
-    # Candidate pool.
     candidates = list(posts_qs.order_by("-created_at", "-id")[:450])
 
     if request.user.is_authenticated and candidates:
@@ -696,7 +680,6 @@ def for_you(request):
         scored.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
         ordered = [row[3] for row in scored]
     else:
-        # Not logged in: fall back to a simple feed-like ordering.
         ordered = candidates
 
     page = _parse_positive_int(request.GET.get("page"), default=1)
@@ -1204,7 +1187,6 @@ def messages(request, username=None):
             previous_dt = current_dt
             previous_date = current_date
 
-        # Mark incoming messages as read when viewing the thread
         Message.objects.filter(
             sender=selected_user,
             recipient=request.user,

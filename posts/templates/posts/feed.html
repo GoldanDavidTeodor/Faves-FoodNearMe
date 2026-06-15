@@ -1871,7 +1871,6 @@ document.querySelectorAll('[data-rate-trigger]').forEach(btn => {
   btn.addEventListener('click', () => {
     activeRateForm = btn.closest('[data-rate-form]');
     activeRateTrigger = btn;
-    // highlight current rating
     const currentValue = (activeRateForm?.querySelector('input[name="rating"]')?.value || btn.dataset.currentRating || '').trim();
     document.querySelectorAll('.rating-choice').forEach(choice => {
       choice.classList.toggle('active', String(choice.dataset.value) === String(currentValue));
@@ -1932,7 +1931,6 @@ document.querySelectorAll('.rating-choice').forEach(choice => {
         closeRatingModal();
       })
       .catch(() => {
-        // keep modal open on failure
       });
   });
 });
@@ -1965,7 +1963,7 @@ document.querySelectorAll('[data-comment-toggle]').forEach(btn => {
   });
 });
 
-// --- My Location panel (right side) ---
+// --- My Location panel  ---
 let myLocationMap = null;
 let myLocationMarker = null;
 let myLocationCircle = null;
@@ -2086,7 +2084,7 @@ function getFeedPostLocations() {
   }
 }
 
-// --- Explore Map (map-first Explore page) ---
+// --- Explore Map  ---
 let exploreMap = null;
 
 function exploreIsActive() {
@@ -2410,7 +2408,6 @@ function setFeedSideOpen(isOpen) {
     return;
   }
 
-  // If it was never open, just ensure it's closed.
   if (!side.classList.contains('active')) {
     side.classList.remove('closing');
     side.setAttribute('aria-hidden', 'true');
@@ -2432,7 +2429,6 @@ function setMyLocationPanelOpen(isOpen) {
   myLocationPanelOpenState = !!isOpen;
   if (btn) btn.setAttribute('aria-pressed', myLocationPanelOpenState ? 'true' : 'false');
 
-  // Persist only the My Location open state.
   setMyLocationPanelPinnedOpen(myLocationPanelOpenState);
 
   syncMyLocationCardVisibility();
@@ -2448,12 +2444,11 @@ function setMyLocationPanelOpen(isOpen) {
     if (!hasLoadedMyLocationPresets) {
       loadMyLocationPresets();
     }
-    // Leaflet needs a resize once visible.
     setTimeout(() => myLocationMap?.invalidateSize(), 60);
   }
 }
 
-// --- Cravings panel (below My Location) ---
+// --- Cravings panel  ---
 const cravingsCard = document.getElementById('cravingsCard');
 const cravingsInput = document.getElementById('cravingsInput');
 const cravingsSuggest = document.getElementById('cravingsSuggest');
@@ -2469,7 +2464,7 @@ let cravingsAppliedTags = new Set();
 let cravingsSuggestTimer = null;
 
 const HOT_TAGS_DAYS = 14;
-let trendsCache = null; // { ts: number, popular: string[], hot: string[] }
+let trendsCache = null; 
 let trendsInFlight = null;
 
 function normalizeCravingTag(raw) {
@@ -2622,7 +2617,6 @@ function navigateWithCravingsTags(tags) {
     } else {
       url.searchParams.delete('tags');
     }
-    // Keep the panel open after reload.
     url.searchParams.set('cr', '1');
     window.location.assign(url.toString());
   } catch (e) {
@@ -2662,7 +2656,6 @@ function renderCravingsSelected() {
 
   syncCravingsApplyState();
 
-  // Keep Popular/Hot chips in sync as tags are selected/deselected.
   if (trendsCache) {
     renderTrends();
   }
@@ -2739,7 +2732,6 @@ function setCravingsOpen(open) {
     if (cravingsBtn) cravingsBtn.setAttribute('aria-pressed', 'true');
     setCravingsPinnedOpen(true);
     setFeedSideOpen(true);
-    // If My Location is not open, keep it visually closed.
     syncMyLocationCardVisibility();
     syncTrends();
     cravingsInput?.focus();
@@ -2748,7 +2740,6 @@ function setCravingsOpen(open) {
     setCravingsPinnedOpen(false);
     renderCravingsSuggest([]);
 
-    // If it's not open, nothing to animate.
     if (!cravingsCard.classList.contains('active')) {
       cravingsCard.classList.remove('closing');
       return;
@@ -2760,7 +2751,6 @@ function setCravingsOpen(open) {
       cravingsCard.classList.remove('closing');
       window.__favesCravingsCloseTimer = null;
 
-      // Close the whole sidebar only if My Location isn't open.
       if (!myLocationPanelOpenState) {
         setFeedSideOpen(false);
       }
@@ -2777,21 +2767,17 @@ function seedCravingsFromTag(rawTag) {
     cravingsInput.value = `#${tag}`;
   }
 
-  // Fetch suggestions immediately so it feels like autocomplete.
   fetchCravingsSuggest(tag);
 }
 
-// Clicking a post tag seeds the cravings input.
 document.addEventListener('click', (e) => {
   const tagBtn = e.target.closest('[data-cravings-seed]');
   if (!tagBtn) return;
   e.preventDefault();
-  // Prevent opening the post modal when clicking a tag.
   e.stopPropagation();
   seedCravingsFromTag(tagBtn.getAttribute('data-cravings-seed'));
 });
 
-// Expose for base.html to call.
 window.favesToggleCravingsPanel = function () {
   setCravingsOpen(!(cravingsCard && cravingsCard.classList.contains('active')));
 };
@@ -3028,14 +3014,12 @@ if (removeLocationFilterBtn) {
     url.searchParams.delete('rangeKm');
     url.searchParams.set('ml', '1');
 
-    // If no search params remain, drop the '?' entirely.
     const next = url.searchParams.toString();
     const target = next ? `${url.pathname}?${next}` : url.pathname;
     window.location.assign(target);
   });
 }
 
-// If a location filter is present in the URL, open the panel and sync the slider.
 (function initMyLocationFromQuery() {
   const initial = readLocationParams();
   if (initial.rangeKm !== null) {
@@ -3055,7 +3039,6 @@ if (removeLocationFilterBtn) {
   }
 })();
 
-// If cravings are pinned open via ?cr=1, open the card and hydrate selected tags.
 (function initCravingsFromQuery() {
   if (!cravingsCard) return;
 
@@ -3105,11 +3088,10 @@ if (removeLocationFilterBtn) {
   });
 })();
 
-// --- Explore (map-first) init ---
+// --- Explore  init ---
 (function initExploreMap() {
   if (!exploreIsActive()) return;
   initExploreMapIfPresent();
-  // Leaflet needs a resize once visible.
   setTimeout(() => exploreMap?.invalidateSize(), 60);
 })();
 </script>
